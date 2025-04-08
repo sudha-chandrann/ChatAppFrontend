@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import PublicOnlyRoute from './components/PublicOnlyRoute.jsx';
 import DashboardLayout from './components/DashboardLayout.jsx';
 import Profile from './pages/Profile.jsx';
+import NoChatOpenScreen from './components/NoChatOpenScreen.jsx';
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "",
+                element: <NoChatOpenScreen />,
+              },
+              {
+                path: "profile",
                 element: <Profile />,
               }
             ]
