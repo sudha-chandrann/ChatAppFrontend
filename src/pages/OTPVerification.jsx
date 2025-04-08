@@ -138,7 +138,7 @@ function OTPVerification() {
       toast.loading('Sending new OTP...', { id: 'resend' });
       
       // Replace with your API endpoint
-      const response = await axios.post('/api/v1/users/resend-otp', { email });
+      const response = await axios.post('/api/v1/users/sendverfication', { email });
       
       if (response.data.success) {
         toast.success('New OTP sent successfully!', { id: 'resend' });
@@ -180,9 +180,9 @@ function OTPVerification() {
     
     try {
       // Replace with your API endpoint
-      const response = await axios.post('/api/v1/users/verify-otp', { 
+      const response = await axios.post('/api/v1/users/verifyEmail', { 
         email,
-        otp: otpValue
+        code: otpValue
       });
       
       if (response.data.success) {

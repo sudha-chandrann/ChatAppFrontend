@@ -7,6 +7,10 @@ import LandingPage from './pages/LandingPage.jsx';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import OTPVerification from './pages/OTPVerification.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PublicOnlyRoute from './components/PublicOnlyRoute.jsx';
+import DashboardLayout from './components/DashboardLayout.jsx';
+import Profile from './pages/Profile.jsx';
 
 const router = createBrowserRouter([
   {
@@ -14,21 +18,41 @@ const router = createBrowserRouter([
     element:<App/>,
     children:[
       {
-          path:"",
-          element:<LandingPage/>,
+        element: <PublicOnlyRoute />,
+        children: [
+          {
+            path: "",
+            element: <LandingPage />,
+          },
+          {
+            path: "register",
+            element: <Register />
+          },
+          {
+            path: "login",
+            element: <Login />
+          },
+          {
+            path: "verificationOTP",
+            element: <OTPVerification />
+          }
+        ]
       },
       {
-        path:"register",
-        element:<Register/>
-      },
-      {
-        path:"verificationOPT",
-        element:<OTPVerification/>
-      },
-      {
-        path:"login",
-        element:<Login/>
-      },
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "dashboard/",
+            element: <DashboardLayout />,
+            children: [
+              {
+                path: "",
+                element: <Profile />,
+              }
+            ]
+          },
+        ]
+      }
 
     ]
 
