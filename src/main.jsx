@@ -12,6 +12,8 @@ import PublicOnlyRoute from './components/PublicOnlyRoute.jsx';
 import DashboardLayout from './components/DashboardLayout.jsx';
 import Profile from './pages/Profile.jsx';
 import NoChatOpenScreen from './components/NoChatOpenScreen.jsx';
+import { Provider } from 'react-redux';
+import store from './redux/store.js';
 
 const router = createBrowserRouter([
   {
@@ -67,6 +69,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-   <RouterProvider router={router}/>
+  <Provider store={store}>
+  <RouterProvider router={router}/>
+  </Provider>
    </StrictMode>,
 )
