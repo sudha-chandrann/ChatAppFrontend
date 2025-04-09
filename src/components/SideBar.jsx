@@ -16,7 +16,7 @@ const Sidebar = () => {
   const navItems = [
     {
       icon: MessageCircle,
-      path: "/dashboard",
+      path: "/dashboard/conversation",
       label: "Chat",
     },
     {
@@ -38,7 +38,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="bg-gray-950 text-white h-screen fixed left-0 pt-14">
+    <div className="bg-gray-950 text-white h-screen fixed left-0 pt-14 ">
       <div className="flex flex-col justify-between h-full py-6 px-2 w-16">
         <div className="flex flex-col items-center gap-6">
           {navItems.map((item) => (
@@ -90,7 +90,7 @@ const Sidebar = () => {
             onMouseLeave={() => setHoveredIcon(null)}
           >
             <button className="p-2 rounded-full bg-gray-500 text-white hover:bg-gray-600 transition-all duration-200 flex items-center justify-center" onClick={()=>{setsearchuser(prev=>!prev)}}>
-              <UserSearchIcon size={16}  />
+              <UserSearchIcon size={26}  />
             </button>
 
             {hoveredIcon === "search user" && (

@@ -1,12 +1,15 @@
 import { Search, X, UserPlus, User, Clock } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 function SearchUser({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate=useNavigate();
 
   // Fetch users based on search term
   useEffect(() => {
@@ -63,15 +66,18 @@ function SearchUser({ onClose }) {
   // Start a new chat with user
   const startChat = async (userId) => {
     try {
-      console.log(`Starting chat with user: ${userId}`);
+      const response= await axios.get(`/api/v1/conversations/user/${userId}`)
+      toast.success(response.data.message||"Conversation is created Successfully")
+      navigate(`/dashboard/conversation/${response.data.Conversation}`)
       onClose();
     } catch (err) {
+      toast.error(err.response?.data?.message || 'Something went wrong');
       console.error('Failed to start chat:', err);
     }
   };
 
   return (
-    <div className='h-screen w-full top-0 left-0 right-0 fixed z-50 pt-10 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm'>
+    <div className='h-screen w-full top-0 left-0 right-0 fixed z-50 pt-10 flex items-center justify-center bg-gray-950 bg-opacity-60 backdrop-blur-sm'>
       <div className='bg-gray-900 w-full max-w-md rounded-lg shadow-xl overflow-hidden'>
         <div className='p-4 border-b border-gray-800 flex justify-between items-center'>
           <h2 className='text-xl font-bold text-white'>Find Users</h2>

@@ -14,6 +14,7 @@ import Profile from './pages/Profile.jsx';
 import NoChatOpenScreen from './components/NoChatOpenScreen.jsx';
 import { Provider } from 'react-redux';
 import store from './redux/store.js';
+import ConversationPage from './pages/ConversationPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
               {
                 path: "profile",
                 element: <Profile />,
+              },
+              {
+                path: "conversation/:conversationId",
+                element: <ConversationPage/>,
               }
             ]
           },
