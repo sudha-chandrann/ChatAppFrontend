@@ -181,8 +181,8 @@ function Profile() {
   };
 
   return (
-    <div className="min-h-screen  bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white pt-24 pb-10  ">
-      <div className=" mx-auto px-4 md:px-10">
+    <div className="min-h-screen  bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white py-10  ">
+      <div className=" mx-auto px-4 md:px-10 pb-4">
         {error && (
           <Notification 
             type="error" 
