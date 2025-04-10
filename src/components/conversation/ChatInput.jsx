@@ -1,9 +1,9 @@
-import { Camera, File, Image, Mic, Paperclip, Send, Smile, Video } from "lucide-react";
+import { Camera, File, Image, Mic, Paperclip, Send, Smile, Video, X } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { sendTypingStatus } from "../../utils/socket"
 import uploadfile from "../../utils/uploadImage";
 
-function ChatInput({ onSendMessage, conversationId }) {
+function ChatInput({ onSendMessage, conversationId, replyingTo, onCancelReply }) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [messageInput, setMessageInput] = useState("");
@@ -17,6 +17,8 @@ function ChatInput({ onSendMessage, conversationId }) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    } else if (e.key === "Escape" && replyingTo) {
+      onCancelReply();
     }
   };
 
@@ -121,8 +123,59 @@ function ChatInput({ onSendMessage, conversationId }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Focus the input when replying to a message
+  useEffect(() => {
+    if (replyingTo) {
+      messageInputRef.current?.focus();
+    }
+  }, [replyingTo]);
+
+  // Helper function to get a truncated content preview
+  const getReplyPreview = (message) => {
+    if (!message) return '';
+    
+    if (message.contentType === 'text') {
+      return message.content.length > 50 
+        ? message.content.substring(0, 50) + '...' 
+        : message.content;
+    } else if (message.contentType === 'image') {
+      return 'Image';
+    } else if (message.contentType === 'video') {
+      return 'Video';
+    } else if (message.contentType === 'file') {
+      return 'File: ' + (message.mediaName || '');
+    } else {
+      return message.contentType;
+    }
+  };
+
   return (
-    <div className="bg-gray-800 p-3 fixed bottom-0 right-0 h-20 md:w-4/6 lg:5/6 w-full">
+    <div className="bg-gray-800 p-3 fixed bottom-0 right-0 md:w-4/6 lg:5/6 w-full">
+      {/* Reply preview */}
+      {replyingTo && (
+        <div className="bg-gray-700 p-2 rounded mb-2 relative flex">
+          <div className="flex-1">
+            <div className="flex items-center">
+              <div className="w-1 h-full bg-blue-500 mr-2"></div>
+              <div>
+                <div className="text-xs text-blue-400 font-medium">
+                  Replying to {replyingTo.sender.username}
+                </div>
+                <div className="text-sm text-gray-300 truncate">
+                  {getReplyPreview(replyingTo)}
+                </div>
+              </div>
+            </div>
+          </div>
+          <button 
+            className="p-1 text-gray-400 hover:text-white self-start"
+            onClick={onCancelReply}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+        
       <div className="relative">
         {showAttachMenu && (
           <div className="absolute bottom-16 left-0 bg-gray-700 rounded-lg shadow-lg p-2 grid grid-cols-3 gap-2">
@@ -201,10 +254,10 @@ function ChatInput({ onSendMessage, conversationId }) {
           <textarea
             ref={messageInputRef}
             placeholder="Type a message"
-            className="flex-1 py-3 px-3 bg-transparent outline-none resize-none max-h-20 text-white"
+            className="flex-1 py-3 px-3 bg-transparent outline-none resize-none max-h-20 text-white chat-input"
             value={messageInput}
             onChange={handleInputChange}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             rows={1}
           />
 

@@ -37,7 +37,7 @@ const router = createBrowserRouter([
             element: <Login />
           },
           {
-            path: "verificationOTP",
+            path: "verificationOPT",
             element: <OTPVerification />
           }
         ]
