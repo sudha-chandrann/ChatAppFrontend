@@ -5,18 +5,20 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import SearchUser from "./sidbar/Searchuser";
+import CreateGroup from "./sidbar/CreateGroup";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [hoveredIcon, setHoveredIcon] = useState(null);
   const [searchuser,setsearchuser]=useState(false);
+  const [createGroup,setcreateGroup]=useState(false);
   const isActive = (path) => location.pathname === path;
   const profilePicture = useSelector((state) => state.user.profilePicture);
   const navItems = [
     {
       icon: MessageCircle,
-      path: "/dashboard/conversation",
+      path: "/dashboard",
       label: "Chat",
     },
     {
@@ -73,7 +75,7 @@ const Sidebar = () => {
             onMouseEnter={() => setHoveredIcon("create-group")}
             onMouseLeave={() => setHoveredIcon(null)}
           >
-            <button className="p-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-all duration-200 flex items-center justify-center">
+            <button className="p-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-all duration-200 flex items-center justify-center" onClick={()=>{ setcreateGroup(prev=>!prev)}}>
               <Users size={16} className="mr-1" />
               <Plus size={14} />
             </button>
@@ -165,6 +167,11 @@ const Sidebar = () => {
       {
         searchuser && (
           <SearchUser onClose={()=>{setsearchuser(false)}}/>
+        )
+      }
+      {
+        createGroup && (
+          <CreateGroup onClose={()=>{setcreateGroup(false)}}/>
         )
       }
     </div>

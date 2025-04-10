@@ -47,7 +47,6 @@ export default function ConversationPage() {
       const response = await axios.get(
         `/api/v1/conversations/messages/${conversationId}`
       );
-      console.log("Messages response:", response.data);
       const messagesList = response.data.messages;
       setMessages(messagesList);
 
