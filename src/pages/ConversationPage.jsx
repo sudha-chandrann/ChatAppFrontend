@@ -13,6 +13,7 @@ import {
   markMessageAsRead
 } from "../utils/socket"
 import toast from 'react-hot-toast';
+import MessageBox from '../components/conversation/MessageBox';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -29,7 +30,6 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await axios.get(`/api/v1/conversations/chat/${conversationId}`);
-      console.log("Conversation response:", response.data);
       setConversation(response.data.Conversation);
       getMessages();
     } catch (err) {
@@ -74,7 +74,11 @@ export default function ConversationPage() {
           setMessages(prev => [...prev, message]);
           
           // Mark message as read if it's not from current user
-          if (message.sender._id !== currentUserId) {
+          if (
+            message.sender._id !== currentUserId && 
+            message.deliveryStatus !== 'read' && 
+            !message.readBy.some((read) => read.user.toString() === currentUserId.toString())
+          ) {
             markMessageAsRead(message._id, conversationId);
           }
         }
@@ -87,13 +91,14 @@ export default function ConversationPage() {
           }));
         }
       },
-      onMessageRead: ({ messageId, userId }) => {
+      onMessageRead: ({ messageId, userId,status }) => {
         if (userId !== currentUserId) {
           setMessages(prev => 
             prev.map(msg => 
               msg._id === messageId 
                 ? { 
-                    ...msg, 
+                    ...msg,
+                    deliveryStatus:status,
                     readBy: [...msg.readBy, { user: userId, readAt: new Date() }]
                   }
                 : msg
@@ -140,11 +145,6 @@ export default function ConversationPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
   
-  const formatMessageTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-  
   const formatMessageDate = (dateString) => {
     const date = new Date(dateString);
     const today = new Date();
@@ -174,7 +174,7 @@ export default function ConversationPage() {
 
   const handleSendNewMessage = async (content, contentType = 'text', mediaData = null) => {
     try {
-            await sendMessage({
+        await sendMessage({
         conversationId,
         content,
         contentType,
@@ -189,6 +189,7 @@ export default function ConversationPage() {
       console.error("Error sending message:", error);
 
     }
+
   };
 
   if (loading) {
@@ -258,66 +259,18 @@ export default function ConversationPage() {
               const isMine = message.sender._id === currentUserId;
               
               return (
-                <div 
-                  key={message._id}
-                  className={`flex mb-2 ${isMine ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`max-w-xs lg:max-w-md rounded-lg px-4 py-2 shadow ${
-                      isMine 
-                        ? 'bg-green-800 rounded-tr-none text-white' 
-                        : 'bg-gray-800 rounded-tl-none text-white'
-                    }`}
-                  >
-                    {isGroup && !isMine && (
-                      <div className="text-xs font-medium text-blue-400 mb-1">
-                        {message.sender.username}
-                      </div>
-                    )}
-                    
-                    {message.contentType === 'text' ? (
-                      <p>{message.content}</p>
-                    ) : message.contentType === 'image' ? (
-                      <img 
-                        src={message.mediaUrl || '/placeholder-image.jpg'} 
-                        alt="Message attachment" 
-                        className="rounded mb-1 max-w-full" 
-                      />
-                    ) : message.contentType === 'file' ? (
-                      <div className="flex items-center bg-gray-700 p-2 rounded">
-                        <span className="text-sm text-blue-300">Document: {message.fileName || 'File'}</span>
-                      </div>
-                    ) : null}
-                    
-                    <div className="flex items-center justify-end mt-1">
-                      <span className="text-xs text-gray-400">
-                        {formatMessageTime(message.createdAt)}
-                      </span>
-                      
-                      {isMine && (
-                        <span className="ml-1 text-xs">
-                          {message.status === 'sending' ? (
-                            <div className="w-3 h-3 rounded-full border border-gray-400"></div>
-                          ) : message.status === 'sent' ? (
-                            <div className="text-gray-400">✓</div>
-                          ) : message.status === 'delivered' ? (
-                            <div className="text-gray-400">✓✓</div>
-                          ) : message.status === 'read' ? (
-                            <div className="text-blue-400">✓✓</div>
-                          ) : null}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+               <MessageBox key={message._id} message={message} isMine={isMine} isGroup={isGroup}/>
               );
             })}
           </div>
         ))}
         
         {/* Typing indicator */}
-        {activeTypingUsers.length > 0 && (
-          <div className="flex items-center text-gray-400 text-sm mt-2 mb-1 ml-2">
+
+        <div ref={messagesEndRef} />
+      </div>
+       {activeTypingUsers.length > 0 && (
+          <div className="flex items-center text-gray-400 text-sm mt-auto mb-1 ml-2  sticky left-2 bottom-20">
             {activeTypingUsers.length === 1 
               ? `${activeTypingUsers[0]} is typing...` 
               : `${activeTypingUsers.join(', ')} are typing...`}
@@ -329,9 +282,6 @@ export default function ConversationPage() {
           </div>
         )}
         
-        <div ref={messagesEndRef} />
-      </div>
-      
       <ChatInput onSendMessage={handleSendNewMessage} conversationId={conversationId} />
     </div>
   );

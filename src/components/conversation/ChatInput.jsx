@@ -1,6 +1,7 @@
-import { Camera, File, Image, Mic, Paperclip, Send, Smile } from "lucide-react";
+import { Camera, File, Image, Mic, Paperclip, Send, Smile, Video } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { sendTypingStatus } from "../../utils/socket"
+import uploadfile from "../../utils/uploadImage";
 
 function ChatInput({ onSendMessage, conversationId }) {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -43,61 +44,36 @@ function ChatInput({ onSendMessage, conversationId }) {
     
     try {
       setIsUploading(true);
+      console.log(" the file is ", file);
       
-      // Determine content type based on file mimetype
-      const contentType = file.type.startsWith('image/') ? 'image' : 'file';
+      let contentType;
+      if (file.type.startsWith('image/')) {
+        contentType = 'image';
+      } else if (file.type.startsWith('video/')) {
+        contentType = 'video';
+      } else {
+        contentType = 'file';
+      }
       
-      // Here you would typically upload the file to your server/cloud storage
-      // For now, we'll simulate this with a timeout
-      
-      // Create a FormData object to send the file
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      // Simulate file upload with setTimeout
-      setTimeout(() => {
-        // For demo purposes, we'll create a fake URL
-        const fakeUrl = URL.createObjectURL(file);
-        
-        // Send message with file attachment
-        onSendMessage(
-          contentType === 'image' ? 'Image' : 'File: ' + file.name,
-          contentType,
-          {
-            url: fakeUrl,
-            name: file.name,
-            size: file.size,
-            type: file.type
-          }
-        );
-        
-        setIsUploading(false);
-      }, 1500);
-      
-      // In a real app, you would use axios to upload:
-      /*
-      const response = await axios.post('/api/v1/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const uploadedFile = await uploadfile(file);
       
       onSendMessage(
-        contentType === 'image' ? 'Image' : 'File: ' + file.name,
+        contentType === 'image' ? 'Image' : 
+        contentType === 'video' ?  file.name : 
+        file.name?file.name:"file",
         contentType,
         {
-          url: response.data.url,
+          url: uploadedFile,
           name: file.name,
           size: file.size,
           type: file.type
         }
       );
-      
-      setIsUploading(false);
-      */
-      
+            
     } catch (error) {
       console.error('Error uploading file:', error);
+    }
+    finally{
       setIsUploading(false);
     }
   };
@@ -105,14 +81,15 @@ function ChatInput({ onSendMessage, conversationId }) {
   const handleAttachmentSelect = (type) => {
     setShowAttachMenu(false);
     
-    if (type === 'camera') {
-      // In a mobile app, this would open the camera
-      alert('Camera functionality is not available in this demo');
-      return;
+    // Set the appropriate accept attribute based on the type
+    if (type === 'image') {
+      fileInputRef.current.accept = 'image/*';
+    } else if (type === 'video') {
+      fileInputRef.current.accept = 'video/*';
+    } else {
+      fileInputRef.current.accept = '*/*';
     }
     
-    // Create and trigger file input
-    fileInputRef.current.accept = type === 'image' ? 'image/*' : '*/*';
     fileInputRef.current.click();
   };
 
@@ -145,7 +122,7 @@ function ChatInput({ onSendMessage, conversationId }) {
   }, []);
 
   return (
-    <div className="bg-gray-800 p-3 fixed bottom-0 right-0 md:w-4/6 lg:5/6 w-full">
+    <div className="bg-gray-800 p-3 fixed bottom-0 right-0 h-20 md:w-4/6 lg:5/6 w-full">
       <div className="relative">
         {showAttachMenu && (
           <div className="absolute bottom-16 left-0 bg-gray-700 rounded-lg shadow-lg p-2 grid grid-cols-3 gap-2">
@@ -169,12 +146,12 @@ function ChatInput({ onSendMessage, conversationId }) {
             </div>
             <div 
               className="flex flex-col items-center p-2 cursor-pointer hover:bg-gray-600 rounded-lg"
-              onClick={() => handleAttachmentSelect('camera')}
+              onClick={() => handleAttachmentSelect('video')}
             >
               <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center mb-1">
-                <Camera size={20} className="text-white" />
+                <Video size={20} className="text-white" />
               </div>
-              <span className="text-xs text-white">Camera</span>
+              <span className="text-xs text-white">Video</span>
             </div>
           </div>
         )}
