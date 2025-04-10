@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./SideBar";
+import { useSelector } from "react-redux";
+import {  initializeSocket, joinUserRoom } from "../utils/socket";
+import toast from "react-hot-toast";
 function DashboardLayout() {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
+  const [status,setStatus]=useState(false);
   // Check if a chat or profile is active
   const isActiveChatOrProfile =
     location.pathname.includes("/dashboard/conversation/") ||
@@ -22,6 +25,39 @@ function DashboardLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const userId= useSelector((state) => state.user._id);
+  useEffect(() => {
+    const socket = initializeSocket();
+
+    joinUserRoom(userId);
+
+    const handleConnect = () => {
+      setStatus("connected");
+    };
+
+    const handleDisconnect = () => {
+      setStatus("disconnected");
+    };
+
+
+    
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("error", (error) => {
+      toast.error(error.message || "Something went wrong!");
+    });
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("error");
+    };
+  }, [userId]);
+
+
+
+
   return (
     <div className="h-screen bg-gray-900 overflow-hidden">
       {/* Fixed header */}
@@ -35,7 +71,7 @@ function DashboardLayout() {
         >
           <div className="h-14 w-full md:w-2/6 lg:1/6 fixed top-0 z-50 left-0  bg-gray-950 shadow-md flex items-center px-4">
             <div className="text-xl font-bold bg-gradient-to-r from-purple-500 to-sky-700 bg-clip-text text-transparent">
-              ChatterBox
+              ChatterBox {status}
             </div>
           </div>
           <div>
