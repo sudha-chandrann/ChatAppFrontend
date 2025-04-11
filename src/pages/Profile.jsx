@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Camera, Edit2, Eye, EyeOff, Save, X, User } from "lucide-react";
 import toast from "react-hot-toast";
 import uploadfile from "../utils/uploadImage";
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function Profile() {
   const [profileData, setProfileData] = useState(null);
@@ -32,7 +32,9 @@ function Profile() {
   const getProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/api/v1/users/getcurrentuser`);
+      const response = await axios.get(`/api/v1/users/getcurrentuser`, {
+        withCredentials: true
+      });
       setProfileData(response.data.user);
       setFormData({
         fullName: response.data.user.fullName,
@@ -107,9 +109,11 @@ function Profile() {
       setLoading(true);
 
       const response = await axios.patch(
-        `${BASE_URL}/api/v1/users/updateprofile`,
+        `/api/v1/users/updateprofile`,
         formData
-      );
+        , {
+          withCredentials: true
+        });
       setSuccess(response.data.message || "Profile updated successfully!");
       setIsEditing(false);
       getProfile();
@@ -138,9 +142,11 @@ function Profile() {
     try {
       setLoading(true);
 
-      await axios.patch(`${BASE_URL}/api/v1/users/changepassword`, {
+      await axios.patch(`/api/v1/users/changepassword`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
+      }, {
+        withCredentials: true
       });
 
       setSuccess("Password changed successfully!");

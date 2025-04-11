@@ -14,7 +14,7 @@ import {
 } from "../utils/socket";
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -32,8 +32,10 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASE_URL}/api/v1/conversations/chat/${conversationId}`
-      );
+        `/api/v1/conversations/chat/${conversationId}`
+        , {
+          withCredentials: true
+        });
       setConversation(response.data.Conversation);
       getMessages();
     } catch (err) {
@@ -46,10 +48,13 @@ export default function ConversationPage() {
   const getMessages = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/v1/conversations/messages/${conversationId}`
-      );
+        `/api/v1/conversations/messages/${conversationId}`
+        , {
+          withCredentials: true
+        });
       const messagesList = response.data.messages;
       setMessages(messagesList);
+      console.log(" the messages are ",response.data.messages)
 
       // Mark all unread messages as read
       messagesList.forEach((message) => {
@@ -280,7 +285,7 @@ export default function ConversationPage() {
     });
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
+    <div className="flex flex-col h-screen bg-black">
       <ChatNavbar conversation={conversation} />
 
       <div

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Bell, Settings, MessageCircle, Plus } from 'lucide-react';
 import ConversationCard from './sidbar/ConversationCard';
 import SearchUser from './sidbar/Searchuser';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function ChatList() {
   const [conversations, setConversations] = useState([]);
@@ -15,7 +15,9 @@ function ChatList() {
   const getAllConversations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/api/v1/conversations/getallconversations`);
+      const response = await axios.get(`/api/v1/conversations/getallconversations`, {
+        withCredentials: true
+      });
       
       const sortedConversations = sortConversationsByDate(response.data.conversations);
       
@@ -83,8 +85,8 @@ function ChatList() {
       
       {/* Search bar */}
       <div className='px-6 py-3 border-b border-gray-800 bg-gray-900'>
-        <div className='relative'>
-          <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
+        <div >
+          <div className='fixed inset-y-0 left-0 -z-10 pl-4 flex items-center pointer-events-none'>
             <Search className='text-gray-500' size={16} />
           </div>
           <input 
@@ -114,15 +116,8 @@ function ChatList() {
               </>
             ) : (
               <>
-                <MessageCircle size={40} className="mb-3 opacity-50" />
+                <MessageCircle size={40} className="mb-3 " />
                 <p>No conversations yet</p>
-                <button 
-                  onClick={() => setstartnewchart(true)}
-                  className='mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition flex items-center'
-                >
-                  <Plus size={16} className="mr-1" />
-                  Start a conversation
-                </button>
               </>
             )}
           </div>

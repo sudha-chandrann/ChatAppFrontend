@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { RiShieldCheckLine, RiArrowLeftLine, RiMailSendLine, RiMailLine } from "react-icons/ri";
 import axios from 'axios';
 import toast from 'react-hot-toast';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function OTPVerification() {
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ function OTPVerification() {
       toast.loading('Sending new OTP...', { id: 'resend' });
       
       // Replace with your API endpoint
-      const response = await axios.post(`${BASE_URL}/api/v1/users/sendverfication`, { email });
+      const response = await axios.post(`/api/v1/users/sendverfication`, { email });
       
       if (response.data.success) {
         toast.success('New OTP sent successfully!', { id: 'resend' });
@@ -181,11 +181,10 @@ function OTPVerification() {
     
     try {
       // Replace with your API endpoint
-      const response = await axios.post(`${BASE_URL}/api/v1/users/verifyEmail`, { 
+      const response = await axios.post(`/api/v1/users/verifyEmail`, { 
         email,
         code: otpValue
       });
-      
       if (response.data.success) {
         toast.success(response.data.message || 'Account verified successfully!');
         navigate('/login');

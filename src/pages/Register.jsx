@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import toast from "react-hot-toast";
 import uploadfile from "../utils/uploadImage";
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function Register() {
   const navigate = useNavigate();
@@ -112,7 +112,7 @@ function Register() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/v1/users/register`, formData);
+      const response = await axios.post(`/api/v1/users/register`, formData);
 
       if (response.data.success) {
         toast.success(response.data.message || "Registration successful!");

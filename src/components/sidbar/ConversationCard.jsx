@@ -149,7 +149,7 @@ function ConversationCard({ conversation, onMessageUpdate }) {
       onClick={() => handleConversationClick(conversation._id)}
     >
       <div className="px-6 py-4 flex items-start">
-        <div className="relative flex-shrink-0">
+        <div className=" flex-shrink-0">
           {conversation.displayAvatar ? (
             <img
               src={conversation.displayAvatar}
