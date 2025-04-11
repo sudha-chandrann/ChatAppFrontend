@@ -4,11 +4,11 @@ import Sidebar from "./SideBar";
 import { useSelector } from "react-redux";
 import {  initializeSocket, joinUserRoom } from "../utils/socket";
 import toast from "react-hot-toast";
+import ChatList from "./ChatList";
 function DashboardLayout() {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [status,setStatus]=useState(false);
-  // Check if a chat or profile is active
   const isActiveChatOrProfile =
     location.pathname.includes("/dashboard/conversation/") ||
     location.pathname === "/dashboard/profile";
@@ -74,15 +74,16 @@ function DashboardLayout() {
               ChatterBox {status}
             </div>
           </div>
-          <div>
-          <Sidebar />
+          <div className="flex">
+           <Sidebar />
+           <ChatList/>
           </div>
         </div>
 
         <div
           className={`${
             isMobile && !isActiveChatOrProfile ? "hidden" : "block"
-          } md:w-4/6 lg:5/6 w-full min-h-screen overflow-y-auto md:ml-auto`}
+          } md:w-4/6 lg:5/6 w-full bg-gray-950 min-h-screen overflow-y-auto md:ml-auto`}
         >
           <Outlet />
         </div>

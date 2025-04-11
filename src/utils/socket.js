@@ -157,6 +157,15 @@ export const setupConversationListeners = (callbacks) => {
   socket.on('messageNotification', (data) => {
     if (callbacks.onMessageNotification) callbacks.onMessageNotification(data);
   });
+
+  socket.on('sendmessageNotification', (data) => {
+    if (callbacks.onSendMessageNotification) callbacks.onSendMessageNotification(data);
+  });
+
+  socket.on('markNotificationread', (data) => {
+    if (callbacks.onReadNotification) callbacks.onReadNotification(data);
+  });
+
   socket.on('messageReaction', (data) => {
     if (callbacks.onMessageReaction) callbacks.onMessageReaction(data);
   });

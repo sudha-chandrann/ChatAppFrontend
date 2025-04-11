@@ -30,10 +30,10 @@ function ChatNavbar({conversation}) {
       </Link>
       {
         (conversation && conversation.displayAvatar )? (
-          <img 
-          src={conversation.displayAvatar || '/api/placeholder/40/40'} 
+          <img
+          src={conversation.displayAvatar}
           alt={conversation.displayName}
-          className="w-10 h-10 rounded-full"
+          className="w-12 h-12 rounded-full object-cover"
         />
         ):(
           <div className='rounded-full p-2 bg-gray-600'>
