@@ -14,7 +14,7 @@ import {
 } from "../utils/socket";
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
-import PinnedMessageCard from "../components/conversation/PinnedMessageCard";
+import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
 // const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function ConversationPage() {
@@ -28,7 +28,7 @@ export default function ConversationPage() {
   const currentUserId = useSelector((state) => state.user._id);
   const [typingUsers, setTypingUsers] = useState({});
   const [replyingTo, setReplyingTo] = useState(null);
-
+  const [isanychange, setanychange] = useState(false);
   const getConversationDetails = async () => {
     try {
       setLoading(true);
@@ -187,8 +187,45 @@ export default function ConversationPage() {
             );
             return {
               ...prev,
-              pinnedmessage:newPinnedmessages
+              pinnedmessage: newPinnedmessages,
             };
+          });
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg._id === messageId ? { ...msg, isPinned: false } : msg
+            )
+          );
+        }
+      },
+      onUnmuted: ({ userId, conversationId: msgConversationId }) => {
+        if (conversationId === msgConversationId && currentUserId === userId) {
+          setConversation((prev) => {
+            return {
+              ...prev,
+              isusermuted: false,
+            };
+          });
+          toast.success("Conversation unmuted successfully", {
+            style: {
+              background: "#1F2937",
+              color: "#fff",
+            },
+          });
+        }
+      },
+      onMuted: ({ userId, conversationId: msgConversationId }) => {
+        if (conversationId === msgConversationId && currentUserId === userId) {
+          setConversation((prev) => {
+            return {
+              ...prev,
+              isusermuted: true,
+            };
+          });
+          toast.success("Conversation muted successfully", {
+            style: {
+              background: "#1F2937",
+              color: "#fff",
+            },
           });
         }
       },
@@ -200,7 +237,7 @@ export default function ConversationPage() {
       cleanup();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, isanychange]);
 
   useEffect(() => {
     scrollToBottom();
@@ -338,7 +375,7 @@ export default function ConversationPage() {
 
   return (
     <div className="flex flex-col h-screen bg-black">
-      <ChatNavbar conversation={conversation} />
+      <ChatNavbar conversation={conversation} setanychange={setanychange} />
 
       <div
         className="flex-grow overflow-y-auto p-4 pb-24"
@@ -350,12 +387,8 @@ export default function ConversationPage() {
       >
         {conversation.pinnedmessage &&
           conversation.pinnedmessage.length > 0 && (
-            <PinnedMessageCard
-              message={
-                conversation.pinnedmessage[
-                  conversation.pinnedmessage.length - 1
-                ]
-              }
+            <PinnedMessagesContainer
+              pinnedMessages={conversation.pinnedmessage}
               conversationId={conversationId}
             />
           )}

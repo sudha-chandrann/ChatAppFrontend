@@ -1,102 +1,138 @@
-import {  User } from 'lucide-react'
-import React from 'react'
-import { RiUnpinLine } from 'react-icons/ri'
+import { User, Pin, X, ChevronDown, ChevronUp } from 'lucide-react'
+import React, { useState } from 'react'
 import { PinnedMessage } from '../../utils/socket'
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'
 
-function PinnedMessageCard({message,conversationId}) {
-    console.log(" the pinned message is ",message)
-    const handleUnPinned = async (e) => {
-        e.stopPropagation();
-        try {
-          await PinnedMessage(message._id,conversationId);
-          toast.success('Message Unpinned successfully');
-        } catch {
-          toast.error('Failed to Unpin message', {
-            style: {
-              background: '#1F2937',
-              color: '#fff',
-            },
-          });
-        }
-      };
+function PinnedMessageCard({ message, conversationId, onUnpin }) {
+  const handleUnpin = async (e) => {
+    e.stopPropagation();
+    try {
+      await PinnedMessage(message._id, conversationId);
+      toast.success('Message unpinned successfully');
+      if (onUnpin) onUnpin(message._id);
+    } catch  {
+      toast.error('Failed to unpin message', {
+        style: {
+          background: '#1F2937',
+          color: '#fff',
+        },
+      });
+    }
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-500 p-3 mb-4 rounded-md shadow-md text-gray-800 fixed top-16 z-50 w-full right-0 md:w-4/6 lg:5/6 mx-auto transition-all duration-300 hover:shadow-lg">
-    <div className="flex items-start gap-3 relative">
-      {/* Pin icon */}
-      <div className="absolute -top-2 -left-2 bg-yellow-500 rounded-full p-1 shadow-sm">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-          />
-        </svg>
-      </div>
-
-      {/* Avatar */}
-      {message.sender.profilePicture ? (
-        <img
-          src={
-            message.sender?.profilePicture 
-          }
-          alt={message.sender.username}
-          className="w-10 h-10 rounded-full object-cover border-2 border-yellow-400 shadow-sm"
-        />
-      ) : (
-        <div className="bg-gradient-to-r from-gray-800 to-gray-300 p-2 rounded-full">
-          <User size={23} />
-        </div>
-      )}
-
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-1">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-3 hover:shadow-lg transition-shadow">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center space-x-3">
+          <Pin className="h-4 w-4 text-amber-500" />
+          
+          <div className="flex-shrink-0">
+            {message.sender.profilePicture ? (
+              <img 
+                src={message.sender.profilePicture} 
+                alt={message.sender.username} 
+                className="h-8 w-8 rounded-full"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </div>
+            )}
+          </div>
+          
           <div>
-            <p className="text-xs text-yellow-700">
-              @
-              {message.sender?.username || "unknown"}
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              @{message.sender?.username || "unknown"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-600 italic">
-              Unpin Message
-            </span>
-            {/* Unpin button - include onClick handler to call your unpin function */}
-            <button
-              className="text-gray-500 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-gray-100"
-              aria-label="Unpin message"
-              onClick={handleUnPinned}
-            >
-              <RiUnpinLine/>
-            </button>
-          </div>
         </div>
 
-        <div className="mt-1">
-          <p className="text-gray-700 text-sm line-clamp-2 break-words">
-            {
-              message.content
-            }
-          </p>
-
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          {new Date(
-            message.createdAt
-          ).toLocaleString()}
+        <button
+          onClick={handleUnpin}
+          className="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+          title="Unpin Message"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      
+      <div className="mt-3 pl-10">
+        <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap break-words">
+          {message.content}
         </p>
       </div>
+      
+      <div className="mt-3 pl-10">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {formatTime(message.createdAt)}
+        </span>
+      </div>
     </div>
-  </div>
-  )
+  );
 }
 
-export default PinnedMessageCard
+function PinnedMessagesContainer({ pinnedMessages, conversationId }) {
+  const [showAllPinned, setShowAllPinned] = useState(false);
+  const [messages, setMessages] = useState(pinnedMessages || []);
+  
+  const visibleMessages = showAllPinned ? messages : messages.slice(0, 1);
+  
+  const handleUnpin = (messageId) => {
+    setMessages(prevMessages => prevMessages.filter(msg => msg._id !== messageId));
+  };
+
+  if (!messages.length) return null;
+
+  return (
+    <div className="pinned-messages-container mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+          <Pin className="h-4 w-4 mr-2 text-amber-500" />
+          Pinned Messages
+        </h3>
+      </div>
+
+      <div className="space-y-3">
+        {visibleMessages.map(message => (
+          <PinnedMessageCard 
+            key={message._id} 
+            message={message} 
+            conversationId={conversationId}
+            onUnpin={handleUnpin}
+          />
+        ))}
+      </div>
+
+      {messages.length > 1 && (
+        <button
+          onClick={() => setShowAllPinned(!showAllPinned)}
+          className="mt-3 w-full flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+        >
+          {showAllPinned ? (
+            <>
+              <ChevronUp className="h-4 w-4 mr-2" />
+              Show Less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4 mr-2" />
+              Show All Pinned Messages ({messages.length})
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+export { PinnedMessageCard, PinnedMessagesContainer };

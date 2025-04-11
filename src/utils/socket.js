@@ -131,6 +131,11 @@ export const PinnedMessage=(messageId, conversationId )=>{
   socket.emit("pinnedMessage", { messageId, conversationId });
 }
 
+export const MutedConversation=(conversationId)=>{
+  const socket = getSocket();
+  socket.emit("muteConversation", { conversationId });
+}
+
 
 export const disconnectSocket = () => {
   if (socket) {
@@ -195,6 +200,12 @@ export const setupConversationListeners = (callbacks) => {
   socket.on('messagePinned',(data)=>{
     if (callbacks.onMessagePinned) callbacks.onMessagePinned(data);
   })
+  socket.on('unmuted',(data)=>{
+    if (callbacks.onUnmuted) callbacks.onUnmuted(data);
+  })
+  socket.on('muted',(data)=>{
+    if (callbacks.onMuted) callbacks.onMuted(data);
+  })
   
   return () => {
     // Cleanup listeners when component unmounts
@@ -211,5 +222,7 @@ export const setupConversationListeners = (callbacks) => {
     socket.off('messageEdited');
     socket.off('markNotificationread');
     socket.off('sendmessageNotification');
+    socket.off('unmuted')
+    socket.off('muted')
   };
 };
