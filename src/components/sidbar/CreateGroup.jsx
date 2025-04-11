@@ -3,6 +3,7 @@ import { Search, X, UserPlus, User, Clock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function CreateGroup({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +90,7 @@ function CreateGroup({ onClose }) {
 
     try {
       const userIds = selectedUsers.map(user => user._id);
-      const response = await axios.post(`/api/v1/conversations/group`, {
+      const response = await axios.post(`${BASE_URL}/api/v1/conversations/group`, {
         userIds,
         groupName
       });

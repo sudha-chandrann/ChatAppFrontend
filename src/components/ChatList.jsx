@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Bell, Settings, MessageCircle, Plus } from 'lucide-react';
 import ConversationCard from './sidbar/ConversationCard';
 import SearchUser from './sidbar/Searchuser';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function ChatList() {
   const [conversations, setConversations] = useState([]);
@@ -14,7 +15,7 @@ function ChatList() {
   const getAllConversations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/v1/conversations/getallconversations');
+      const response = await axios.get(`${BASE_URL}/api/v1/conversations/getallconversations`);
       
       const sortedConversations = sortConversationsByDate(response.data.conversations);
       

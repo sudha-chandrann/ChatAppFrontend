@@ -14,6 +14,7 @@ import {
 } from "../utils/socket";
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -31,7 +32,7 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/api/v1/conversations/chat/${conversationId}`
+        `${BASE_URL}/api/v1/conversations/chat/${conversationId}`
       );
       setConversation(response.data.Conversation);
       getMessages();
@@ -45,7 +46,7 @@ export default function ConversationPage() {
   const getMessages = async () => {
     try {
       const response = await axios.get(
-        `/api/v1/conversations/messages/${conversationId}`
+        `${BASE_URL}/api/v1/conversations/messages/${conversationId}`
       );
       const messagesList = response.data.messages;
       setMessages(messagesList);

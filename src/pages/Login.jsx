@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { RiEyeLine, RiEyeOffLine, RiLockLine, RiMailLine } from 'react-icons/ri';
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
 function Login() {
 
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const response = await axios.post('/api/v1/users/login', formData);
+      const response = await axios.post(`${BASE_URL}/api/v1/users/login`, formData);
       
       if (response.data.success) {
         toast.success(response.data.message || "Login successful!");

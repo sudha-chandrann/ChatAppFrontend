@@ -4,6 +4,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Loader from './Loader';
 import { useDispatch } from 'react-redux';
 import { authlogin } from '../redux/userslice';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const ProtectedRoute = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,7 +14,7 @@ const ProtectedRoute = () => {
 
       const checkUserAuth = async () => {
         try {
-          const response = await axios.get('/api/v1/users/getcurrentuser');
+          const response = await axios.get(`${BASE_URL}/api/v1/users/getcurrentuser`);
           
           if (response.data.success) {
             dispatch(authlogin(response.data.user))

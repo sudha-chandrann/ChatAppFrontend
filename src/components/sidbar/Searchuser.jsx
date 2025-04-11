@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 function SearchUser({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +67,7 @@ function SearchUser({ onClose }) {
   // Start a new chat with user
   const startChat = async (userId) => {
     try {
-      const response= await axios.get(`/api/v1/conversations/user/${userId}`)
+      const response= await axios.get(`${BASE_URL}/api/v1/conversations/user/${userId}`)
       toast.success(response.data.message||"Conversation is created Successfully")
       navigate(`/dashboard/conversation/${response.data.Conversation}`)
       onClose();
