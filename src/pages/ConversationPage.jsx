@@ -14,6 +14,7 @@ import {
 } from "../utils/socket";
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
+import PinnedMessageCard from "../components/conversation/PinnedMessageCard";
 // const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function ConversationPage() {
@@ -32,10 +33,12 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/api/v1/conversations/chat/${conversationId}`
-        , {
-          withCredentials: true
-        });
+        `/api/v1/conversations/chat/${conversationId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(" the conversation is ", response.data.Conversation);
       setConversation(response.data.Conversation);
       getMessages();
     } catch (err) {
@@ -48,13 +51,14 @@ export default function ConversationPage() {
   const getMessages = async () => {
     try {
       const response = await axios.get(
-        `/api/v1/conversations/messages/${conversationId}`
-        , {
-          withCredentials: true
-        });
+        `/api/v1/conversations/messages/${conversationId}`,
+        {
+          withCredentials: true,
+        }
+      );
       const messagesList = response.data.messages;
       setMessages(messagesList);
-      console.log(" the messages are ",response.data.messages)
+      console.log(" the messages are ", response.data.messages);
 
       // Mark all unread messages as read
       messagesList.forEach((message) => {
@@ -81,11 +85,10 @@ export default function ConversationPage() {
     joinConversation(conversationId);
 
     const cleanup = setupConversationListeners({
-      onNewMessage: (message) => {
-        if (message.conversation === conversationId) {
+      onNewMessage: ({ conversationId: msgConversationId, message }) => {
+        console.log(" the new message is ", message);
+        if (msgConversationId === conversationId) {
           setMessages((prev) => [...prev, message]);
-
-          // Mark message as read if it's not from current user
           if (
             message.sender._id !== currentUserId &&
             message.deliveryStatus !== "read" &&
@@ -98,6 +101,7 @@ export default function ConversationPage() {
         }
       },
       onUserTyping: ({ userId, isTyping }) => {
+        console.log("User typing update:", userId, isTyping);
         if (userId !== currentUserId) {
           setTypingUsers((prev) => ({
             ...prev,
@@ -138,6 +142,54 @@ export default function ConversationPage() {
       onMessageForwarded: ({ success, count }) => {
         if (success) {
           toast.success(`Message forwarded to ${count} conversations`);
+        }
+      },
+      onMessageEdited: ({ messageId, ConversationId, message }) => {
+        if (conversationId === ConversationId) {
+          setMessages((prev) =>
+            prev.map((msg) => (msg._id === messageId ? message : msg))
+          );
+        }
+      },
+      onMessagePinned: ({
+        messageId,
+        conversationId: msgConversationId,
+        message,
+      }) => {
+        if (msgConversationId === conversationId) {
+          setConversation((prev) => {
+            const ispinned = prev?.pinnedmessage?.find(
+              (mess) => mess._id === messageId
+            );
+            if (ispinned) {
+              return prev;
+            } else {
+              return {
+                ...prev,
+                pinnedmessage: [...(prev?.pinnedmessage || []), message],
+              };
+            }
+          });
+
+          // Optional: Also update the message in messages state
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg._id === messageId ? { ...msg, isPinned: true } : msg
+            )
+          );
+        }
+      },
+      onMessageUnpinned: ({ messageId, conversationId: msgConversationId }) => {
+        if (conversationId === msgConversationId) {
+          setConversation((prev) => {
+            const newPinnedmessages = prev?.pinnedmessage?.filter(
+              (mess) => mess._id !== messageId
+            );
+            return {
+              ...prev,
+              pinnedmessage:newPinnedmessages
+            };
+          });
         }
       },
     });
@@ -298,14 +350,14 @@ export default function ConversationPage() {
       >
         {conversation.pinnedmessage &&
           conversation.pinnedmessage.length > 0 && (
-            <div className="bg-gray-800 border-l-4 border-yellow-500 p-3 mb-4 rounded shadow-sm text-white">
-              <div className="flex items-center text-yellow-500 mb-1">
-                <span className="text-sm font-medium">Pinned Message</span>
-              </div>
-              <p className="text-gray-300">
-                {conversation.pinnedmessage[0].content}
-              </p>
-            </div>
+            <PinnedMessageCard
+              message={
+                conversation.pinnedmessage[
+                  conversation.pinnedmessage.length - 1
+                ]
+              }
+              conversationId={conversationId}
+            />
           )}
 
         {Object.entries(groupedMessages).map(([date, dateMessages]) => (

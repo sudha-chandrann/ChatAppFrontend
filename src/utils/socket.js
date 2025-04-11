@@ -97,6 +97,10 @@ export const addReaction = (messageId, emoji) => {
   const socket = getSocket();
   socket.emit("addReaction", { messageId, emoji });
 };
+export const editMessage = (messageId, conversationId, newContent) => {
+  const socket = getSocket();
+  socket.emit("editMessage", { messageId,conversationId, newContent });
+};
 
 export const deleteMessage = (messageId, conversationId) => {
   const socket = getSocket();
@@ -122,6 +126,11 @@ export const forwardMessage = (messageId, targetConversationIds) => {
   });
 };
 
+export const PinnedMessage=(messageId, conversationId )=>{
+  const socket = getSocket();
+  socket.emit("pinnedMessage", { messageId, conversationId });
+}
+
 
 export const disconnectSocket = () => {
   if (socket) {
@@ -134,12 +143,13 @@ export const setupConversationListeners = (callbacks) => {
   const socket = getSocket();
   
   // Listen for new messages
-  socket.on('newMessage', (message) => {
-    if (callbacks.onNewMessage) callbacks.onNewMessage(message);
+  socket.on('newMessage', (data) => {
+    if (callbacks.onNewMessage) callbacks.onNewMessage(data);
   });
   
   // Listen for typing indicators
   socket.on('userTyping', (data) => {
+    console.log('Received typing status:', data);
     if (callbacks.onUserTyping) callbacks.onUserTyping(data);
   });
   
@@ -176,6 +186,15 @@ export const setupConversationListeners = (callbacks) => {
   socket.on('messageForwarded', (data) => {
     if (callbacks.onMessageForwarded) callbacks.onMessageForwarded(data);
   });
+  socket.on('messageEdited', (data) => {
+    if (callbacks.onMessageEdited) callbacks.onMessageEdited(data);
+  });
+  socket.on('messageUnpinned',(data)=>{
+    if (callbacks.onMessageUnpinned) callbacks.onMessageUnpinned(data);
+  })
+  socket.on('messagePinned',(data)=>{
+    if (callbacks.onMessagePinned) callbacks.onMessagePinned(data);
+  })
   
   return () => {
     // Cleanup listeners when component unmounts
@@ -187,5 +206,10 @@ export const setupConversationListeners = (callbacks) => {
     socket.off('messageReaction');
     socket.off('messageDeleted');
     socket.off('messageForwarded');
+    socket.off('messagePinned');
+    socket.off('messageUnpinned');
+    socket.off('messageEdited');
+    socket.off('markNotificationread');
+    socket.off('sendmessageNotification');
   };
 };

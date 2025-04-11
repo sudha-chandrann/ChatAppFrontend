@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Reply, Trash2, Share, Check, X, Smile, Clock } from 'lucide-react';
+import { Reply, Trash2, Share, Check, X, Smile, Clock, User, Edit, Pin } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
-import { addReaction, deleteMessage, forwardMessage, setupConversationListeners } from '../../utils/socket';
+import { addReaction, deleteMessage, forwardMessage, PinnedMessage, } from '../../utils/socket';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+import MessageEditor from './MessageEditor';
 
 function MessageBox({ 
   message, 
@@ -17,12 +18,10 @@ function MessageBox({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showForwardOptions, setShowForwardOptions] = useState(false);
   const [selectedConversations, setSelectedConversations] = useState([]);
-  const [messagereaction,setmessagereaction]=useState(message.reactions)
+  const [isEditing, setIsEditing] = useState(false);
   const optionsRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const currentUserId = useSelector((state) => state.user._id);
-  const conversationId=message.conversation;
-
   const formatMessageTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -138,6 +137,27 @@ function MessageBox({
     setShowEmojiPicker(false);
     setShowOptions(false);
   };
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setShowOptions(false);
+  };
+  const handlePinned = async (e) => {
+    e.stopPropagation();
+    try {
+      await PinnedMessage(message._id, message.conversation);
+      toast.success('Message pinned successfully');
+    } catch {
+      toast.error('Failed to Pin message', {
+        style: {
+          background: '#1F2937',
+          color: '#fff',
+        },
+      });
+    }
+    setShowOptions(false);
+  };
+
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -164,28 +184,6 @@ function MessageBox({
   }, [showEmojiPicker, showForwardOptions]);
 
 
-  useEffect(() => {
-   
-
-    const cleanup = setupConversationListeners({
-
-      onMessageReaction: ({ messageId, reactions }) => {
-        if (messageId === message._id) {
-          console.log(" the reaction is ",reactions)
-          setmessagereaction(reactions);
-        }
-      },
-
-    });
-
-    // Cleanup function
-    return () => {
-      cleanup();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, currentUserId]);
-
-
   const handleRemoveReaction = async (emoji) => {
     try {
       await addReaction(message._id, emoji);
@@ -200,12 +198,12 @@ function MessageBox({
     }
   };
 
-  // Display for message is deleted
   if (message.isDeleted) {
     return (
       <div className={`flex mb-4 ${isMine ? 'justify-end' : 'justify-start'}`}>
         <div className={`max-w-xs lg:max-w-md rounded-xl px-4 py-2 shadow-md bg-gray-700 text-gray-400 italic transition-all duration-200`}>
           <p className="text-sm">This message was deleted</p>
+          <span className='ml-auto'>DeletedAt : {formatMessageTime(message.deletedAt)}</span>
         </div>
       </div>
     );
@@ -235,10 +233,10 @@ function MessageBox({
   };
 
   const organizeReactions = () => {
-    if (!messagereaction || messagereaction.length === 0) return [];
+    if (!message.reactions || message.reactions.length === 0) return [];
     
     const reactionsMap = {};
-    messagereaction.forEach(reaction => {
+    message.reactions.forEach(reaction => {
       if (!reactionsMap[reaction.emoji]) {
         reactionsMap[reaction.emoji] = {
           emoji: reaction.emoji,
@@ -261,8 +259,24 @@ function MessageBox({
   const organizedReactions = organizeReactions();
 
   return (
+    <div  className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'} gap-1`}>
+      {
+        (isGroup && !isMine) && (
+          message.sender.profilePicture ? 
+          <img
+          src={message.sender.profilePicture}
+          alt=''
+          className="w-12 h-12 rounded-full object-cover"
+
+          />:(
+            <div className='rounded-full p-2 text-white bg-gradient-to-r from-gray-900 to-gray-500 h-fit'>
+              <User size={28}/>
+            </div>
+          )
+        )
+      }
     <div
-      className={`flex mb-3 ${isMine ? 'justify-end' : 'justify-start'} relative group`}
+      className={`flex  relative group`}
     >
       <div
         className={`max-w-xs lg:max-w-md rounded-2xl px-4 py-3 shadow-lg ${getMessageBgColor()} ${
@@ -272,6 +286,7 @@ function MessageBox({
         } transition-all duration-200 hover:shadow-xl`}
         onClick={toggleOptions}
       >
+
         {isGroup && !isMine && (
           <div className="text-xs font-medium text-blue-400 mb-1">
             {message.sender.username}
@@ -288,7 +303,7 @@ function MessageBox({
           <div className="bg-gray-800 bg-opacity-50 p-2 rounded-lg mb-2 border-l-2 border-blue-500">
             <div className="text-xs text-blue-400 flex items-center gap-1">
               <Reply size={12} />
-              Reply to {message.replyTo.sender.username}
+              Reply to {message.replyTo.sender._id===currentUserId?"me":message.replyTo.sender.username}
             </div>
             <div className="text-xs text-gray-400 truncate">
               {message.replyTo.contentType === 'text' ? 
@@ -298,42 +313,58 @@ function MessageBox({
             </div>
           </div>
         )}
-
-        {message.contentType === 'text' ? (
-          <p className="break-words">{message.content}</p>
-        ) : message.contentType === 'image' ? (
-          <div>
-            <img
-              src={message.mediaUrl || '/placeholder-image.jpg'}
-              alt={message.mediaName || "Message attachment"}
-              className="rounded-lg mb-1 max-w-full w-52 cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            />
-          </div>
-        ) : message.contentType === 'file' ? (
-          <Link 
-            to={message.mediaUrl} 
-            target='_blank' 
-            className="flex items-center bg-gray-800 bg-opacity-50 p-2 rounded-lg hover:bg-opacity-70 transition-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="text-sm text-blue-300">Document: {message.mediaName || 'File'}</span>
-          </Link>
-        ) : message.contentType === 'video' ? (
-          <video 
-            src={message.mediaUrl} 
-            className="rounded-lg mb-1 max-w-full" 
-            muted 
-            controls 
-            onClick={(e) => e.stopPropagation()}
+                {
+          isEditing && message.contentType === 'text' ? (
+            <MessageEditor 
+            message={message} 
+            conversationId={message.conversation}
+            onClose={() => setIsEditing(false)}
           />
-        ) : null}
+          ):(
+            message.contentType === 'text' ? (
+              <p className="break-words">                  {message.content}
+              {message.isEdited && !isEditing && (
+                <span className="text-xs text-gray-400 ml-1">(edited)</span>
+              )}</p>
+            ) : message.contentType === 'image' ? (
+              <div>
+                <img
+                  src={message.mediaUrl || '/placeholder-image.jpg'}
+                  alt={message.mediaName || "Message attachment"}
+                  className="rounded-lg mb-1 max-w-full w-52 cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                />
+              </div>
+            ) : message.contentType === 'file' ? (
+              <Link 
+                to={message.mediaUrl} 
+                target='_blank' 
+                className="flex items-center bg-gray-800 bg-opacity-50 p-2 rounded-lg hover:bg-opacity-70 transition-all"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-sm text-blue-300">Document: {message.mediaName || 'File'}</span>
+              </Link>
+            ) : message.contentType === 'video' ? (
+              <video 
+                src={message.mediaUrl} 
+                className="rounded-lg mb-1 max-w-full" 
+                muted 
+                controls 
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : null
+          )
+        }
+
 
         <div className="flex items-center justify-end mt-2 gap-1">
           <span className="text-xs text-gray-400">
-            {formatMessageTime(message.createdAt)}
+            {
+              message.isEdited ? formatMessageTime(message.editHistory[message.editHistory.length-1]?.editedAt):formatMessageTime(message.createdAt)
+            }
+          
           </span>
 
           {isMine && (
@@ -344,11 +375,11 @@ function MessageBox({
         </div>
         
         {organizedReactions.length > 0 && (
-          <div className="flex flex-wrap -ml-2 mt-2 gap-1">
+          <div className="flex flex-wrap max-w-[200px] -ml-2 mt-2 gap-0.5">
             {organizedReactions.map(reaction => (
               <div 
                 key={reaction.emoji} 
-                className={`${reaction.hasMyReaction ? 'bg-blue-800' : 'bg-gray-800'} rounded-full px-2 py-1 flex items-center text-xs transition-transform hover:scale-110 cursor-pointer`}
+                className={`${reaction.hasMyReaction ? 'bg-blue-800' : 'bg-gray-800'} rounded-full px-1 py-1 flex items-center text-xs transition-transform hover:scale-110 cursor-pointer`}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (reaction.hasMyReaction) {
@@ -356,7 +387,7 @@ function MessageBox({
                   }
                 }}
                 title={reaction.hasMyReaction ? "Click to remove your reaction" : 
-                      `${reaction.count} ${reaction.count > 1 ? 'reactions' : 'reaction'}`}
+                  `${reaction.count} ${reaction.count > 1 ? 'reactions' : 'reaction'}`}
               >
                 <span>{reaction.emoji}</span>
                 {reaction.count > 1 && <span className="ml-1 text-gray-400">{reaction.count}</span>}
@@ -393,7 +424,28 @@ function MessageBox({
             >
               <Reply size={16} />
             </button>
-            
+            {isMine && message.contentType === 'text'&&(
+              <button 
+                onClick={handleEdit}
+                className="p-2 hover:bg-gray-700 rounded-md transition-colors flex items-center justify-center"
+                title="Edit"
+              >
+                <Edit size={16} />
+              </button>
+
+            )}
+              
+              {
+                !message.isPinned && (
+                  <button
+                   onClick={handlePinned}
+                   className="p-2 hover:bg-gray-700 rounded-md transition-colors flex items-center justify-center"
+                   title='pin'
+                   >
+                    <Pin size={16} />
+                  </button>
+                )
+              }
             
               <button 
                 onClick={toggleEmojiPicker} 
@@ -421,6 +473,7 @@ function MessageBox({
               >
                 <Trash2 size={16} />
               </button>
+
             )}
           </div>
         </div>
@@ -513,6 +566,8 @@ function MessageBox({
         </div>
       )}
     </div>
+    </div>
+
   );
 }
 
