@@ -6,11 +6,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server:{
     proxy:{
-      '/api':'http://localhost:4000'
+      '/api':'https://chatappbackend-xdb9.onrender.com'
     }
   },
   define: {
-    'import.meta.env.VITE_API_URL ': JSON.stringify('http://localhost:4000')
+    'import.meta.env.VITE_API_URL ': JSON.stringify('https://chatappbackend-xdb9.onrender.com')
   },
   plugins: [react(),tailwindcss(),],
 })
