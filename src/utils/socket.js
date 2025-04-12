@@ -131,9 +131,35 @@ export const PinnedMessage=(messageId, conversationId )=>{
   socket.emit("pinnedMessage", { messageId, conversationId });
 }
 
+export const AddNewMemeber=( conversationId ,newuserIds)=>{
+  const socket = getSocket();
+  if(conversationId ){
+    socket.emit("addnewmember", { conversationId, newuserIds });
+  }
+}
+
+export const RemoveMember=(conversationId,memberId)=>{
+  const socket = getSocket();
+  if(conversationId ){
+    socket.emit("removeMember", { conversationId, memberId });
+  }
+}
+
+export const MakeMemberAdmin=(conversationId,memberId)=>{
+  const socket = getSocket();
+  if(conversationId ){
+    socket.emit("makememberadmin", { conversationId, memberId });
+  }
+}
+
 export const MutedConversation=(conversationId)=>{
   const socket = getSocket();
   socket.emit("muteConversation", { conversationId });
+}
+
+export const LeaveConversation=(conversationId)=>{
+  const socket = getSocket();
+  socket.emit("leavetheconversation", { conversationId });
 }
 
 
@@ -206,6 +232,22 @@ export const setupConversationListeners = (callbacks) => {
   socket.on('muted',(data)=>{
     if (callbacks.onMuted) callbacks.onMuted(data);
   })
+  socket.on('memberremovedFromConversation',(data)=>{
+    if (callbacks.onMemberRemovedFromConversation) callbacks.onMemberRemovedFromConversation(data);
+  })
+  socket.on('newmemberaddedtoconversation',(data)=>{
+    if (callbacks.onMemberAddedToConversation) callbacks.onMemberAddedToConversation(data);
+  })
+
+  socket.on('membertoadmin',(data)=>{
+    if (callbacks.onMemberToAdmin) callbacks.onMemberToAdmin(data);
+  })
+
+  socket.on('conversationleaved',(data)=>{
+    if (callbacks.onConversationLeft) callbacks.onConversationLeft(data);
+  })
+  
+
   
   return () => {
     // Cleanup listeners when component unmounts
@@ -224,5 +266,7 @@ export const setupConversationListeners = (callbacks) => {
     socket.off('sendmessageNotification');
     socket.off('unmuted')
     socket.off('muted')
+    socket.off('memberremovedFromConversation')
+    socket.off('newmemberaddedtoconversation')
   };
 };

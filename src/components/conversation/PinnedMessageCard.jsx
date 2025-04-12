@@ -1,20 +1,22 @@
-import { User, Pin, X, ChevronDown, ChevronUp } from 'lucide-react'
-import React, { useState } from 'react'
-import { PinnedMessage } from '../../utils/socket'
-import toast from 'react-hot-toast'
+import { User, Pin, X, ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState } from "react";
+import { PinnedMessage } from "../../utils/socket";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-function PinnedMessageCard({ message, conversationId, onUnpin }) {
+function PinnedMessageCard({ message, conversationId, onUnpin, foredit,currentUserId }) {
   const handleUnpin = async (e) => {
     e.stopPropagation();
     try {
       await PinnedMessage(message._id, conversationId);
-      toast.success('Message unpinned successfully');
+      toast.success("Message unpinned successfully");
       if (onUnpin) onUnpin(message._id);
-    } catch  {
-      toast.error('Failed to unpin message', {
+    } catch {
+      toast.error("Failed to unpin message", {
         style: {
-          background: '#1F2937',
-          color: '#fff',
+          background: "#1F2937",
+          color: "#fff",
         },
       });
     }
@@ -23,10 +25,10 @@ function PinnedMessageCard({ message, conversationId, onUnpin }) {
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -35,12 +37,12 @@ function PinnedMessageCard({ message, conversationId, onUnpin }) {
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-3">
           <Pin className="h-4 w-4 text-amber-500" />
-          
+
           <div className="flex-shrink-0">
             {message.sender.profilePicture ? (
-              <img 
-                src={message.sender.profilePicture} 
-                alt={message.sender.username} 
+              <img
+                src={message.sender.profilePicture}
+                alt={message.sender.username}
                 className="h-8 w-8 rounded-full"
               />
             ) : (
@@ -49,29 +51,44 @@ function PinnedMessageCard({ message, conversationId, onUnpin }) {
               </div>
             )}
           </div>
-          
+
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-white">
-              @{message.sender?.username || "unknown"}
+              {
+                message.sender._id ===currentUserId ? "you":`@${message.sender.username}`
+              }
+              
             </p>
           </div>
         </div>
-
-        <button
-          onClick={handleUnpin}
-          className="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
-          title="Unpin Message"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        {foredit && (
+          <button
+            onClick={handleUnpin}
+            className="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+            title="Unpin Message"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
-      
+
       <div className="mt-3 pl-10">
         <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap break-words">
-          {message.content}
+          {message.contentType === "file" ? (
+            <Link
+              to={message.mediaUrl}
+              className="text-blue-500 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {message.content}
+            </Link>
+          ) : (
+            message.content
+          )}
         </p>
       </div>
-      
+
       <div className="mt-3 pl-10">
         <span className="text-xs text-gray-500 dark:text-gray-400">
           {formatTime(message.createdAt)}
@@ -81,14 +98,20 @@ function PinnedMessageCard({ message, conversationId, onUnpin }) {
   );
 }
 
-function PinnedMessagesContainer({ pinnedMessages, conversationId }) {
+function PinnedMessagesContainer({
+  pinnedMessages,
+  conversationId,
+  foredit = true,
+}) {
   const [showAllPinned, setShowAllPinned] = useState(false);
   const [messages, setMessages] = useState(pinnedMessages || []);
-  
+  const currentUserId=useSelector((state) => state.user._id);
   const visibleMessages = showAllPinned ? messages : messages.slice(0, 1);
-  
+
   const handleUnpin = (messageId) => {
-    setMessages(prevMessages => prevMessages.filter(msg => msg._id !== messageId));
+    setMessages((prevMessages) =>
+      prevMessages.filter((msg) => msg._id !== messageId)
+    );
   };
 
   if (!messages.length) return null;
@@ -103,12 +126,14 @@ function PinnedMessagesContainer({ pinnedMessages, conversationId }) {
       </div>
 
       <div className="space-y-3">
-        {visibleMessages.map(message => (
-          <PinnedMessageCard 
-            key={message._id} 
-            message={message} 
+        {visibleMessages.map((message) => (
+          <PinnedMessageCard
+            key={message._id}
+            message={message}
             conversationId={conversationId}
             onUnpin={handleUnpin}
+            foredit={foredit}
+            currentUserId={currentUserId}
           />
         ))}
       </div>

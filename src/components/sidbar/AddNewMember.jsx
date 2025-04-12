@@ -2,17 +2,15 @@ import axios from 'axios';
 import { Search, X, UserPlus, User, Clock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { AddNewMemeber } from '../../utils/socket';
 // const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
-function CreateGroup({ onClose }) {
+function AddNewMember({ onClose ,conversationId}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [groupName, setGroupName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -26,7 +24,7 @@ function CreateGroup({ onClose }) {
       
       try {
         const timeoutId = setTimeout(async () => {
-          const response = await axios.post('/api/v1/users/getusers', {
+          const response = await axios.post(`/api/v1/conversations/getusers/${conversationId}`, {
             term: searchTerm
           }, {
             withCredentials: true
@@ -47,9 +45,9 @@ function CreateGroup({ onClose }) {
     };
     
     searchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
-  // Format last seen time
   const formatLastSeen = (date) => {
     const lastSeen = new Date(date);
     const now = new Date();
@@ -67,7 +65,6 @@ function CreateGroup({ onClose }) {
     return lastSeen.toLocaleDateString();
   };
 
-  // Add or remove user from selected users
   const toggleUserSelection = (user) => {
     const isSelected = selectedUsers.some(selectedUser => selectedUser._id === user._id);
     
@@ -79,11 +76,7 @@ function CreateGroup({ onClose }) {
   };
 
   // Start a new group chat
-  const createGroupChat = async () => {
-    if (!groupName.trim()) {
-      toast.error('Please enter a group name');
-      return;
-    }
+  const handlenewmember = async () => {
 
     if (selectedUsers.length < 1) {
       toast.error('Please select at least 1 users for a group');
@@ -91,19 +84,11 @@ function CreateGroup({ onClose }) {
     }
 
     try {
-      const userIds = selectedUsers.map(user => user._id);
-      const response = await axios.post(`/api/v1/conversations/group`, {
-        userIds,
-        groupName
-      }, {
-        withCredentials: true
-      });
-      toast.success(response.data.message || "Group conversation created successfully");
-      navigate(`/dashboard/conversation/${response.data.conversation}`);
+      const newuserIds = selectedUsers.map(user => user._id);
+      await AddNewMemeber(conversationId,newuserIds)
       onClose();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Something went wrong');
-      console.error('Failed to create group chat:', err);
+    } catch{
+      toast.error('Something went wrong');
     }
   };
 
@@ -111,26 +96,13 @@ function CreateGroup({ onClose }) {
     <div className='h-screen w-full top-0 left-0 right-0 fixed z-50 pt-10 flex items-center justify-center bg-gray-950 bg-opacity-60 backdrop-blur-sm'>
       <div className='bg-gray-900 w-full max-w-md rounded-lg shadow-xl overflow-hidden'>
         <div className='p-4 border-b border-gray-800 flex justify-between items-center'>
-          <h2 className='text-xl font-bold text-white'>Create Group</h2>
+          <h2 className='text-xl font-bold text-white'>Add New Member</h2>
           <button onClick={onClose} className='text-gray-400 hover:text-white'>
             <X size={24} />
           </button>
         </div>
         
         <div className='p-4'>
-          <div className='mb-4'>
-            <label htmlFor="groupName" className='block text-sm font-medium text-gray-400 mb-1'>
-              Group Name
-            </label>
-            <input 
-              type="text"
-              id="groupName"
-              placeholder='Enter group name' 
-              value={groupName} 
-              onChange={(e) => setGroupName(e.target.value)}
-              className='w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500'
-            />
-          </div>
 
           <div className='mb-4'>
             <label className='block text-sm font-medium text-gray-400 mb-1'>
@@ -255,10 +227,10 @@ function CreateGroup({ onClose }) {
             Cancel
           </button>
           <button 
-            onClick={createGroupChat}
-            disabled={selectedUsers.length < 1 || !groupName.trim()} 
+            onClick={handlenewmember}
+            disabled={selectedUsers.length < 1} 
             className={`flex-1 py-2 rounded-md transition ${
-              selectedUsers.length < 1 || !groupName.trim() 
+              selectedUsers.length < 1 
                 ? 'bg-purple-900 text-purple-300 cursor-not-allowed' 
                 : 'bg-purple-600 hover:bg-purple-500 text-white'
             }`}
@@ -271,4 +243,4 @@ function CreateGroup({ onClose }) {
   );
 }
 
-export default CreateGroup;
+export default AddNewMember
