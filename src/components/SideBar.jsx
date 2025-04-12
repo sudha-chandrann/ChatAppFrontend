@@ -27,11 +27,13 @@ const Sidebar = () => {
     try {
       await axiosInstance.get(`/api/v1/users/logout`);
       toast.success("User is logout successfully");
-      localStorage.removeItem('token');
       navigate("/login");
     } catch (error) {
       console.log("the error during logout ", error);
       toast.error(error.response.data.error.message || "Failed to logot ");
+    }
+    finally{
+      localStorage.removeItem('token');
     }
   };
 

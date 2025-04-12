@@ -150,14 +150,14 @@ function Login() {
                 <div className="absolute h-0.5 w-0 bg-gradient-to-r from-cyan-500 to-indigo-500 bottom-0 left-0 transition-all duration-300 group-hover:w-full"></div>
               </div>
               
-
               {/* Submit Button */}
               <button 
-                className={`w-full py-3.5 px-4 mt-8 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-semibold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 hover:shadow-indigo-500/30 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`w-full py-3.5 px-4 mt-4  rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white font-semibold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 hover:shadow-indigo-500/30 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 disabled={isLoading}
               >
                 {isLoading ? 'login...' : 'login'}
               </button>
+              <div className='text-sm text-blue-300 cursor-pointer' onClick={()=>{navigate('/recoveryPassword')}}>Forgotten your password ? </div>
             </form>
             
             <div className="mt-8 text-center text-sm text-gray-400">

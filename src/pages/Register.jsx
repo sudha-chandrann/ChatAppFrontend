@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import {
   RiImageAddLine,
   RiCloseLine,
@@ -289,9 +289,9 @@ function Register() {
                 {isLoading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
+            <div className='text-sm text-blue-300 cursor-pointer mt-2' onClick={()=>{navigate('/verificationOPT')}}>verify your Account </div>
 
             <div className="mt-4 text-center text-sm text-gray-400 flex flex-col">
-              <Link to={"/verificationOPT"} className="text-blue-600 mb-2">verify your Account</Link>
               By creating an account, you agree to our
               <div className="mt-1">
                 <a

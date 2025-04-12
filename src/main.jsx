@@ -17,6 +17,7 @@ import store from './redux/store.js';
 import ConversationPage from './pages/ConversationPage.jsx';
 import InformationPage from './pages/InformationPage.jsx';
 import MediaPage from "./pages/MediaPage.jsx";
+import RecoverPassword from './pages/RecoverPassword.jsx';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
           {
             path: "verificationOPT",
             element: <OTPVerification />
+          },
+          {
+            path: "recoveryPassword",
+            element:<RecoverPassword/>
           }
         ]
       },
