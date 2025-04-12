@@ -1,9 +1,8 @@
-import axios from 'axios';
 import { Search, X, UserPlus, User, Clock } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AddNewMemeber } from '../../utils/socket';
-import apiBaseUrl from '../../utils/baseurl';
+import axiosInstance from '../../utils/axiosConfig';
 
 function AddNewMember({ onClose ,conversationId}) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,10 +23,8 @@ function AddNewMember({ onClose ,conversationId}) {
       
       try {
         const timeoutId = setTimeout(async () => {
-          const response = await axios.post(`${apiBaseUrl}/api/v1/conversations/getusers/${conversationId}`, {
+          const response = await axiosInstance.post(`/api/v1/conversations/getusers/${conversationId}`, {
             term: searchTerm
-          }, {
-            withCredentials: true
           });
           if (response.data.success) {
             setUsers(response.data.data);

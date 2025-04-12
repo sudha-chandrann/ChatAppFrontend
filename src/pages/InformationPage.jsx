@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useParams, Link, useNavigate } from "react-router-dom";
@@ -33,7 +32,7 @@ import toast from "react-hot-toast";
 import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
 import AddNewMember from "../components/sidbar/AddNewMember";
 import uploadfile from "../utils/uploadImage";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 function InformationPage() {
   const params = useParams();
@@ -56,11 +55,8 @@ function InformationPage() {
   const getConversationDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${apiBaseUrl}/api/v1/conversations/chatinfo/${conversationId}`,
-        {
-          withCredentials: true,
-        }
+      const response = await axiosInstance.get(
+        `/api/v1/conversations/chatinfo/${conversationId}`,
       );
       setConversation(response.data.data.conversation);
       setdisplayAvatar(response.data.data.conversation.displayAvatar);

@@ -1,8 +1,7 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Image, Video, File, Download, User } from 'lucide-react';
-import apiBaseUrl from '../utils/baseurl';
+import axiosInstance from '../utils/axiosConfig';
 
 function MediaPage() {
   const params = useParams();
@@ -18,8 +17,8 @@ function MediaPage() {
   const getConversationMediaInformation = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${apiBaseUrl}/api/v1/conversations/mediainformation/${conversationId}`,
+      const response = await axiosInstance.get(
+        `/api/v1/conversations/mediainformation/${conversationId}`,
         {
           withCredentials: true,
         }

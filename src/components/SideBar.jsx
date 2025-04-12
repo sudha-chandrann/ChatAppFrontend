@@ -1,12 +1,11 @@
 import { MessageCircle, User, LogOut, Users, Plus, UserSearchIcon } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import SearchUser from "./sidbar/Searchuser";
 import CreateGroup from "./sidbar/CreateGroup";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -26,10 +25,9 @@ const Sidebar = () => {
 
   const handlelogout = async () => {
     try {
-      await axios.get(`${apiBaseUrl}/api/v1/users/logout`, {
-        withCredentials: true
-      });
+      await axiosInstance.get(`/api/v1/users/logout`);
       toast.success("User is logout successfully");
+      localStorage.removeItem('token');
       navigate("/login");
     } catch (error) {
       console.log("the error during logout ", error);

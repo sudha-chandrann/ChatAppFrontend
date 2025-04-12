@@ -1,10 +1,9 @@
 
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { RiEyeLine, RiEyeOffLine, RiLockLine, RiMailLine } from 'react-icons/ri';
-import apiBaseUrl from '../utils/baseurl';
+import axiosInstance from '../utils/axiosConfig';
 
 
 function Login() {
@@ -63,10 +62,11 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(`${apiBaseUrl}/api/v1/users/login`, formData);
+      const response = await axiosInstance.post(`/api/v1/users/login`, formData);
       
       if (response.data.success) {
         toast.success(response.data.message || "Login successful!");
+        localStorage.setItem('token', response.data.token);
         navigate('/dashboard');
       } else {
         toast.error(response.data.message || "Login failed. Please try again.");

@@ -1,9 +1,8 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Search, Bell, Settings, MessageCircle, Plus } from 'lucide-react';
 import ConversationCard from './sidbar/ConversationCard';
 import SearchUser from './sidbar/Searchuser';
-import apiBaseUrl from '../utils/baseurl';
+import axiosInstance from '../utils/axiosConfig';
 
 function ChatList() {
   const [conversations, setConversations] = useState([]);
@@ -15,9 +14,7 @@ function ChatList() {
   const getAllConversations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${apiBaseUrl}/api/v1/conversations/getallconversations`, {
-        withCredentials: true
-      });
+      const response = await axiosInstance.get(`/api/v1/conversations/getallconversations`);
       
       const sortedConversations = sortConversationsByDate(response.data.conversations);
       

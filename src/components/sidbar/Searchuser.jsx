@@ -1,9 +1,8 @@
 import { Search, X, UserPlus, User, Clock } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import apiBaseUrl from '../../utils/baseurl';
+import axiosInstance from '../../utils/axiosConfig';
 
 function SearchUser({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,10 +24,8 @@ function SearchUser({ onClose }) {
       
       try {
         const timeoutId = setTimeout(async () => {
-          const response = await axios.post(`${apiBaseUrl}/api/v1/users/getusers`, {
+          const response = await axiosInstance.post(`/api/v1/users/getusers`, {
             term: searchTerm
-          }, {
-            withCredentials: true
           });
           if (response.data.success) {
             setUsers(response.data.data);
@@ -69,7 +66,7 @@ function SearchUser({ onClose }) {
   // Start a new chat with user
   const startChat = async (userId) => {
     try {
-      const response= await axios.get(`${apiBaseUrl}/api/v1/conversations/user/${userId}`, {
+      const response= await axiosInstance.get(`/api/v1/conversations/user/${userId}`, {
         withCredentials: true
       })
       toast.success(response.data.message||"Conversation is created Successfully")

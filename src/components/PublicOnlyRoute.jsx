@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import Loader from "./Loader";
 import { useDispatch } from "react-redux";
 import { authlogin } from "../redux/userslice";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 const PublicOnlyRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,9 +14,7 @@ const PublicOnlyRoute = () => {
   useEffect(() => {
     const checkUserAuth = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/api/v1/users/getcurrentuser`, {
-          withCredentials: true
-        });
+        const response = await axiosInstance.get(`/api/v1/users/getcurrentuser`);
         if (response.data.success) {
           setIsAuthenticated(true);
           dispatch(authlogin(response.data.user));

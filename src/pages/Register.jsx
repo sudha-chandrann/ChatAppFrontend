@@ -10,10 +10,9 @@ import {
   RiEyeOffLine,
   RiUser3Line,
 } from "react-icons/ri";
-import axios from "axios";
 import toast from "react-hot-toast";
 import uploadfile from "../utils/uploadImage";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 function Register() {
   const navigate = useNavigate();
@@ -112,7 +111,7 @@ function Register() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/api/v1/users/register`, formData);
+      const response = await axiosInstance.post(`/api/v1/users/register`, formData);
 
       if (response.data.success) {
         toast.success(response.data.message || "Registration successful!");

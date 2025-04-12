@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { useParams, Link, Navigate } from "react-router-dom";
 import ChatNavbar from "../components/conversation/ChatNavbar";
 import ChatInput from "../components/conversation/ChatInput";
@@ -15,7 +14,7 @@ import {
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
 import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 export default function ConversationPage() {
   const params = useParams();
@@ -32,11 +31,8 @@ export default function ConversationPage() {
   const getConversationDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${apiBaseUrl}/api/v1/conversations/chat/${conversationId}`,
-        {
-          withCredentials: true,
-        }
+      const response = await axiosInstance.get(
+        `/api/v1/conversations/chat/${conversationId}`,
       );
       setConversation(response.data.Conversation);
       getMessages();
@@ -49,11 +45,8 @@ export default function ConversationPage() {
 
   const getMessages = async () => {
     try {
-      const response = await axios.get(
-        `${apiBaseUrl}/api/v1/conversations/messages/${conversationId}`,
-        {
-          withCredentials: true,
-        }
+      const response = await axiosInstance.get(
+        `/api/v1/conversations/messages/${conversationId}`,
       );
       const messagesList = response.data.messages;
       setMessages(messagesList);

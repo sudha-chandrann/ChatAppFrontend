@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RiShieldCheckLine, RiArrowLeftLine, RiMailSendLine, RiMailLine } from "react-icons/ri";
-import axios from 'axios';
 import toast from 'react-hot-toast';
-import apiBaseUrl from '../utils/baseurl';
+import axiosInstance from '../utils/axiosConfig';
+
 
 function OTPVerification() {
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ function OTPVerification() {
       toast.loading('Sending new OTP...', { id: 'resend' });
       
       // Replace with your API endpoint
-      const response = await axios.post(`${apiBaseUrl}/api/v1/users/sendverfication`, { email });
+      const response = await axiosInstance.post(`/api/v1/users/sendverfication`, { email });
       
       if (response.data.success) {
         toast.success('New OTP sent successfully!', { id: 'resend' });
@@ -181,7 +181,7 @@ function OTPVerification() {
     
     try {
       // Replace with your API endpoint
-      const response = await axios.post(`${apiBaseUrl}/api/v1/users/verifyEmail`, { 
+      const response = await axiosInstance.post(`/api/v1/users/verifyEmail`, { 
         email,
         code: otpValue
       });

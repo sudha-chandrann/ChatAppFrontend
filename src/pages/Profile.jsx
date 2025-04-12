@@ -1,9 +1,8 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Camera, Edit2, Eye, EyeOff, Save, X, User } from "lucide-react";
 import toast from "react-hot-toast";
 import uploadfile from "../utils/uploadImage";
-import apiBaseUrl from "../utils/baseurl";
+import axiosInstance from "../utils/axiosConfig";
 
 function Profile() {
   const [profileData, setProfileData] = useState(null);
@@ -32,9 +31,7 @@ function Profile() {
   const getProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${apiBaseUrl}/api/v1/users/getcurrentuser`, {
-        withCredentials: true
-      });
+      const response = await axiosInstance.get(`/api/v1/users/getcurrentuser`);
       setProfileData(response.data.user);
       setFormData({
         fullName: response.data.user.fullName,
@@ -108,12 +105,10 @@ function Profile() {
     try {
       setLoading(true);
 
-      const response = await axios.patch(
-        `${apiBaseUrl}/api/v1/users/updateprofile`,
+      const response = await axiosInstance.patch(
+        `/api/v1/users/updateprofile`,
         formData
-        , {
-          withCredentials: true
-        });
+        );
       setSuccess(response.data.message || "Profile updated successfully!");
       setIsEditing(false);
       getProfile();
@@ -142,11 +137,9 @@ function Profile() {
     try {
       setLoading(true);
 
-      await axios.patch(`${apiBaseUrl}/api/v1/users/changepassword`, {
+      await axiosInstance.patch(`/api/v1/users/changepassword`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-      }, {
-        withCredentials: true
       });
 
       setSuccess("Password changed successfully!");
