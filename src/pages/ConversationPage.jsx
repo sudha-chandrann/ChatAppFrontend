@@ -15,7 +15,7 @@ import {
 import toast from "react-hot-toast";
 import MessageBox from "../components/conversation/MessageBox";
 import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
-// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import apiBaseUrl from "../utils/baseurl";
 
 export default function ConversationPage() {
   const params = useParams();
@@ -33,7 +33,7 @@ export default function ConversationPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/api/v1/conversations/chat/${conversationId}`,
+        `${apiBaseUrl}/api/v1/conversations/chat/${conversationId}`,
         {
           withCredentials: true,
         }
@@ -50,7 +50,7 @@ export default function ConversationPage() {
   const getMessages = async () => {
     try {
       const response = await axios.get(
-        `/api/v1/conversations/messages/${conversationId}`,
+        `${apiBaseUrl}/api/v1/conversations/messages/${conversationId}`,
         {
           withCredentials: true,
         }

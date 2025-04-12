@@ -1,4 +1,4 @@
-import { Camera, File, Image, Mic, Paperclip, Send, Smile, Video, X } from "lucide-react";
+import {  File, Image, Mic, Paperclip, Send, Smile, Video, X } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { sendTypingStatus } from "../../utils/socket"
 import uploadfile from "../../utils/uploadImage";

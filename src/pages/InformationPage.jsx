@@ -33,6 +33,7 @@ import toast from "react-hot-toast";
 import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
 import AddNewMember from "../components/sidbar/AddNewMember";
 import uploadfile from "../utils/uploadImage";
+import apiBaseUrl from "../utils/baseurl";
 
 function InformationPage() {
   const params = useParams();
@@ -56,7 +57,7 @@ function InformationPage() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/api/v1/conversations/chatinfo/${conversationId}`,
+        `${apiBaseUrl}/api/v1/conversations/chatinfo/${conversationId}`,
         {
           withCredentials: true,
         }
