@@ -18,6 +18,7 @@ import {
   Image,
 } from "lucide-react";
 import {
+  DeleteTheConversation,
   joinConversation,
   joinUserRoom,
   LeaveConversation,
@@ -25,20 +26,28 @@ import {
   MutedConversation,
   RemoveMember,
   setupConversationListeners,
+  UpdateGroupInfo,
+  UpdateTheProfilePicture,
 } from "../utils/socket";
 import toast from "react-hot-toast";
 import { PinnedMessagesContainer } from "../components/conversation/PinnedMessageCard";
 import AddNewMember from "../components/sidbar/AddNewMember";
+import uploadfile from "../utils/uploadImage";
 
 function InformationPage() {
   const params = useParams();
   const conversationId = params.conversationId;
   const [conversation, setConversation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [displayAvatar, setdisplayAvatar] = useState();
+  const [iseditingavatar, setiseditingavatar] = useState(false);
   const [error, setError] = useState(null);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
   const currentUserId = useSelector((state) => state.user._id);
   const [addnewmember, setaddnewmemeber] = useState(false);
+  const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupDescription, setNewGroupDescription] = useState("");
   const [media, setmedia] = useState([]);
   const [mediaCount, setmediaCount] = useState(0);
   const navigate = useNavigate();
@@ -53,8 +62,11 @@ function InformationPage() {
         }
       );
       setConversation(response.data.data.conversation);
+      setdisplayAvatar(response.data.data.conversation.displayAvatar);
       setmedia(response.data.data.media);
       setmediaCount(response.data.data.mediaCount);
+      setNewGroupDescription(response.data.data.conversation.displaydescription);
+      setNewGroupName(response.data.data.conversation.name);
     } catch (err) {
       console.log("Error getting conversation details:", err);
       setError("Failed to load conversation");
@@ -70,7 +82,6 @@ function InformationPage() {
     joinConversation(conversationId);
 
     const cleanup = setupConversationListeners({
-      // Handle member removal
       onMemberRemovedFromConversation: ({
         conversationId: msgconversationId,
         removedUserId,
@@ -86,15 +97,13 @@ function InformationPage() {
             };
           });
           toast.success(`Member removed from conversation`);
-          
+
           // If current user is removed, navigate to dashboard
           if (removedUserId === currentUserId) {
-            navigate('/dashboard');
+            navigate("/dashboard");
           }
         }
       },
-      
-      // Handle new members added
       onMemberAddedToConversation: ({
         conversationId: msgconversationId,
         participants: newparticipants,
@@ -102,19 +111,17 @@ function InformationPage() {
         if (conversationId === msgconversationId) {
           setConversation((prev) => {
             if (!prev) return prev;
-            return { 
-              ...prev, 
-              participants: newparticipants 
+            return {
+              ...prev,
+              participants: newparticipants,
             };
           });
           toast.success("New members added to conversation");
         }
       },
-      
-      // Handle promoting a member to admin
-      onMemberToAdmin: ({ 
-        conversationId: msgconversationId, 
-        promotedUserId 
+      onMemberToAdmin: ({
+        conversationId: msgconversationId,
+        promotedUserId,
       }) => {
         if (conversationId === msgconversationId) {
           setConversation((prev) => {
@@ -126,30 +133,26 @@ function InformationPage() {
                   return { ...member, role: "admin" };
                 }
                 return member;
-              })
+              }),
             };
           });
           toast.success("Member promoted to admin");
         }
       },
-      
-      // Handle user leaving conversation
       onConversationLeft: ({
         conversationId: msgconversationId,
         leaveduser,
-        deleted
+        deleted,
       }) => {
         if (conversationId === msgconversationId) {
           if (deleted) {
             toast.info("Conversation has been deleted");
-            navigate('/dashboard');
-          }
-          else {
+            navigate("/dashboard");
+          } else {
             if (leaveduser === currentUserId) {
               toast.info("You have left the conversation");
-              navigate('/dashboard');
-            }
-            else {
+              navigate("/dashboard");
+            } else {
               setConversation((prev) => {
                 if (!prev) return prev;
                 return {
@@ -164,12 +167,16 @@ function InformationPage() {
           }
         }
       },
-      
-      // Handle pinned messages
-      onMessagePinned: ({ 
-        conversationId: msgconversationId, 
-        messageId, 
-        message 
+      onConversationDeleted: ({ conversationId: msgconversationId }) => {
+        if (conversationId === msgconversationId) {
+          toast.info("Conversation has been deleted");
+          navigate("/dashboard");
+        }
+      },
+      onMessagePinned: ({
+        conversationId: msgconversationId,
+        messageId,
+        message,
       }) => {
         if (conversationId === msgconversationId) {
           setConversation((prev) => {
@@ -177,10 +184,10 @@ function InformationPage() {
             // Create a new pinnedmessage array if it doesn't exist
             const pinnedmessage = prev.pinnedmessage || [];
             // Only add the message if it's not already pinned
-            if (!pinnedmessage.some(msg => msg._id === messageId)) {
+            if (!pinnedmessage.some((msg) => msg._id === messageId)) {
               return {
                 ...prev,
-                pinnedmessage: [...pinnedmessage, message]
+                pinnedmessage: [...pinnedmessage, message],
               };
             }
             return prev;
@@ -188,50 +195,60 @@ function InformationPage() {
           toast.success("Message pinned");
         }
       },
-      
-      // Handle unpinned messages
-      onMessageUnpinned: ({ 
-        conversationId: msgconversationId, 
-        messageId 
-      }) => {
+      onMessageUnpinned: ({ conversationId: msgconversationId, messageId }) => {
         if (conversationId === msgconversationId) {
           setConversation((prev) => {
             if (!prev || !prev.pinnedmessage) return prev;
             return {
               ...prev,
               pinnedmessage: prev.pinnedmessage.filter(
-                message => message._id !== messageId
-              )
+                (message) => message._id !== messageId
+              ),
             };
           });
           toast.success("Message unpinned");
         }
       },
-      
-      // Handle mute status changes
-      onMuted: ({ 
-        conversationId: msgconversationId, 
-        userId 
-      }) => {
+      onMuted: ({ conversationId: msgconversationId, userId }) => {
         if (conversationId === msgconversationId && userId === currentUserId) {
-          setConversation(prev => ({
+          setConversation((prev) => ({
             ...prev,
-            isusermuted: true
+            isusermuted: true,
           }));
           toast.success("Conversation muted");
         }
       },
-      
-      onUnmuted: ({ 
-        conversationId: msgconversationId, 
-        userId 
-      }) => {
+      onUnmuted: ({ conversationId: msgconversationId, userId }) => {
         if (conversationId === msgconversationId && userId === currentUserId) {
-          setConversation(prev => ({
+          setConversation((prev) => ({
             ...prev,
-            isusermuted: false
+            isusermuted: false,
           }));
           toast.success("Conversation unmuted");
+        }
+      },
+      onProfilePictureUpdated: ({
+        conversationId: msgconversationId,
+        profilePicture,
+      }) => {
+        if (conversationId === msgconversationId) {
+          displayAvatar(profilePicture);
+        }
+      },
+      onGroupInfoUpdated:({conversationId:msgconversationId,name,description})=>{
+        if(conversationId===msgconversationId){
+          setConversation((prev) => {
+            return{
+              ...prev,
+              name:name,
+              description:description,
+              displayName:name,
+              displaydescription:description
+
+            }
+          })
+          setNewGroupDescription(description);
+          setNewGroupName(name);
         }
       }
     });
@@ -239,7 +256,7 @@ function InformationPage() {
     return () => {
       cleanup();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, currentUserId, navigate]);
 
   const handleLeaveGroup = async () => {
@@ -287,17 +304,58 @@ function InformationPage() {
   };
 
   const handleDeleteConversation = async () => {
-    if (!window.confirm("Are you sure you want to delete this conversation? This action cannot be undone.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this conversation? This action cannot be undone."
+      )
+    )
+      return;
     try {
-      // Implement this API call to delete the conversation
-      await axios.delete(`/api/v1/conversations/${conversationId}`, {
-        withCredentials: true
-      });
+      await DeleteTheConversation(conversationId);
       toast.success("Conversation deleted");
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
       console.error("Error deleting conversation:", err);
       toast.error("Failed to delete conversation");
+    }
+  };
+
+  const handleChangeProfilePicture = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      toast.loading("Uploading image...", { id: "uploading" });
+      const uploadedphoto = await uploadfile(file);
+      toast.success("Image uploaded successfully", { id: "uploading" });
+      setdisplayAvatar(uploadedphoto);
+      UpdateTheProfilePicture(conversationId, uploadedphoto);
+    } catch {
+      toast.error("Failed to upload image", { id: "uploading" });
+    }
+  };
+
+  const handleEditGroupInfo = async (e) => {
+    e.preventDefault();
+
+    if (!newGroupName.trim()) {
+      toast.error("Group name cannot be empty");
+      return;
+    }
+
+    try {
+      toast.loading("Updating group info...", { id: "updating-group" });
+      const data={
+        name:newGroupName,
+        displaydescription: newGroupDescription
+      };
+       await UpdateGroupInfo(conversationId,data)
+
+      toast.success("Group Info updated successfully", { id: "updating-group" });
+      setIsEditingInfo(false);
+      
+    } catch (error) {
+      console.error("Error updating group info:", error);
+      toast.error("Failed to update group info", { id: "updating-group" });
     }
   };
 
@@ -360,9 +418,9 @@ function InformationPage() {
         {/* Main Info */}
         <div className="flex items-center mb-6">
           <div className="relative">
-            {conversation.displayAvatar ? (
+            {displayAvatar ? (
               <img
-                src={conversation.displayAvatar}
+                src={displayAvatar}
                 alt={conversation.displayName}
                 className="h-20 w-20 rounded-full object-cover"
               />
@@ -377,8 +435,30 @@ function InformationPage() {
             )}
             {isAdmin && isGroup && (
               <button className="absolute bottom-0 right-0 bg-gray-800 p-1 rounded-full border border-gray-600 hover:bg-gray-700">
-                <Edit className="h-4 w-4 text-gray-400" />
+                <Edit
+                  className="h-4 w-4 text-gray-400"
+                  onClick={() => {
+                    setiseditingavatar(true);
+                  }}
+                />
               </button>
+            )}
+            {isAdmin && isGroup && iseditingavatar && (
+              <div className="absolute bottom-0 right-0">
+                <input
+                  type="file"
+                  id="profilePictureInput"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleChangeProfilePicture}
+                />
+                <label
+                  htmlFor="profilePictureInput"
+                  className="bg-gray-800 p-1 rounded-full border border-gray-600 hover:bg-gray-700 cursor-pointer flex items-center justify-center"
+                >
+                  <Edit className="h-4 w-4 text-gray-400" />
+                </label>
+              </div>
             )}
           </div>
           <div className="ml-4">
@@ -435,7 +515,14 @@ function InformationPage() {
           )}
 
           {isAdmin && isGroup && (
-            <button className="flex items-center justify-center bg-gray-800 py-3 px-4 rounded-md hover:bg-gray-700 transition-colors">
+            <button
+              className="flex items-center justify-center bg-gray-800 py-3 px-4 rounded-md hover:bg-gray-700 transition-colors"
+              onClick={() => {
+                setNewGroupName(conversation.name || "");
+                setNewGroupDescription(conversation.displaydescription || "");
+                setIsEditingInfo(true);
+              }}
+            >
               <Settings className="h-5 w-5 mr-2" />
               <span>Edit Group</span>
             </button>
@@ -550,7 +637,9 @@ function InformationPage() {
                         )}
                       </p>
                       <p className="text-sm text-gray-400">
-                        {participant.user._id === currentUserId ? "me" : `@${participant.user.username}`}
+                        {participant.user._id === currentUserId
+                          ? "me"
+                          : `@${participant.user.username}`}
                       </p>
                     </div>
                   </div>
@@ -595,7 +684,7 @@ function InformationPage() {
         {/* Delete conversation */}
         {isGroup && isAdmin && (
           <div className="mt-auto pt-6">
-            <button 
+            <button
               onClick={handleDeleteConversation}
               className="w-full flex items-center justify-center bg-red-900 py-3 px-4 rounded-md hover:bg-red-800 transition-colors"
             >
@@ -613,6 +702,58 @@ function InformationPage() {
           conversationId={conversationId}
         />
       )}
+
+{isEditingInfo && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div className="bg-gray-800 rounded-lg max-w-md w-full p-6">
+      <h3 className="text-xl font-semibold mb-4">Edit Group Information</h3>
+      
+      <form onSubmit={handleEditGroupInfo}>
+        <div className="mb-4">
+          <label htmlFor="groupName" className="block text-sm font-medium text-gray-400 mb-1">
+            Group Name*
+          </label>
+          <input
+            type="text"
+            id="groupName"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            required
+          />
+        </div>
+        
+        <div className="mb-6">
+          <label htmlFor="groupDescription" className="block text-sm font-medium text-gray-400 mb-1">
+            Group Description (Optional)
+          </label>
+          <textarea
+            id="groupDescription"
+            value={newGroupDescription}
+            onChange={(e) => setNewGroupDescription(e.target.value)}
+            className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[100px]"
+          />
+        </div>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={() => setIsEditingInfo(false)}
+            className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 }

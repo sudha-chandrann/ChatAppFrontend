@@ -38,7 +38,6 @@ export default function ConversationPage() {
           withCredentials: true,
         }
       );
-      console.log(" the conversation is ", response.data.Conversation);
       setConversation(response.data.Conversation);
       getMessages();
     } catch (err) {
@@ -58,7 +57,6 @@ export default function ConversationPage() {
       );
       const messagesList = response.data.messages;
       setMessages(messagesList);
-      console.log(" the messages are ", response.data.messages);
 
       // Mark all unread messages as read
       messagesList.forEach((message) => {
@@ -227,6 +225,16 @@ export default function ConversationPage() {
               color: "#fff",
             },
           });
+        }
+      },
+      onProfilePictureUpdated:({conversationId:msgconversationId,profilePicture})=>{
+        if(conversationId===msgconversationId){
+          setConversation((prev)=>{
+            return{
+              ...prev,
+              displayAvatar:profilePicture
+            }
+          })
         }
       },
     });

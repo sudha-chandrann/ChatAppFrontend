@@ -97,6 +97,7 @@ export const addReaction = (messageId, emoji) => {
   const socket = getSocket();
   socket.emit("addReaction", { messageId, emoji });
 };
+
 export const editMessage = (messageId, conversationId, newContent) => {
   const socket = getSocket();
   socket.emit("editMessage", { messageId,conversationId, newContent });
@@ -160,6 +161,27 @@ export const MutedConversation=(conversationId)=>{
 export const LeaveConversation=(conversationId)=>{
   const socket = getSocket();
   socket.emit("leavetheconversation", { conversationId });
+}
+
+export const DeleteTheConversation=(conversationId)=>{
+  const socket = getSocket();
+  if(conversationId){
+    socket.emit("deletetheConversation", { conversationId });
+  }
+}
+
+export const UpdateTheProfilePicture=(conversationId,uploadedphoto)=>{
+  const socket = getSocket();
+  if(conversationId ){
+    socket.emit("EditTheProfilePicture", { conversationId, uploadedphoto });
+  }
+}
+
+export const UpdateGroupInfo=(conversationId,data)=>{
+  const socket = getSocket();
+  if(conversationId ){
+    socket.emit("EditGroupInfo", { conversationId, data });
+  }
 }
 
 
@@ -246,7 +268,17 @@ export const setupConversationListeners = (callbacks) => {
   socket.on('conversationleaved',(data)=>{
     if (callbacks.onConversationLeft) callbacks.onConversationLeft(data);
   })
-  
+
+  socket.on('deletedtheconversation',(data)=>{
+    if (callbacks.onConversationDeleted) callbacks.onConversationDeleted(data);
+  })
+
+  socket.on("updatedProfilePicture",(data)=>{
+    if(callbacks.onProfilePictureUpdated) callbacks.onProfilePictureUpdated(data);
+  })
+  socket.on("updatedGroupInfo",(data)=>{
+    if(callbacks.onGroupInfoUpdated) callbacks.onGroupInfoUpdated(data);
+  })
 
   
   return () => {
@@ -268,5 +300,10 @@ export const setupConversationListeners = (callbacks) => {
     socket.off('muted')
     socket.off('memberremovedFromConversation')
     socket.off('newmemberaddedtoconversation')
+    socket.off('membertoadmin')
+    socket.off('conversationleaved')
+    socket.off('deletedtheconversation')
+    socket.off("updatedProfilePicture")
+    socket.off("updatedGroupInfo")
   };
 };
