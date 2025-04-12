@@ -16,7 +16,7 @@ import { Provider } from 'react-redux';
 import store from './redux/store.js';
 import ConversationPage from './pages/ConversationPage.jsx';
 import InformationPage from './pages/InformationPage.jsx';
-
+import MediaPage from "./pages/MediaPage.jsx";
 const router = createBrowserRouter([
   {
     path:"/",
@@ -65,7 +65,11 @@ const router = createBrowserRouter([
               {
                 path:'conversation/:conversationId/information',
                 element:<InformationPage/>
-              }
+              },
+              {
+                path:'conversation/:conversationId/media',
+                element:<MediaPage/>
+              },
             ]
           },
         ]
