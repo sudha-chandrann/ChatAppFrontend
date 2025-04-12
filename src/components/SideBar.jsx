@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import SearchUser from "./sidbar/Searchuser";
 import CreateGroup from "./sidbar/CreateGroup";
-// const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Sidebar = () => {
 
   const handlelogout = async () => {
     try {
-      await axios.get(`/api/v1/users/logout`, {
+      await axios.get(`${BASE_URL}/api/v1/users/logout`, {
         withCredentials: true
       });
       toast.success("User is logout successfully");
