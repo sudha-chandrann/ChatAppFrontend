@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosConfig';
+import { useDispatch } from 'react-redux';
+import { change } from '../../redux/userslice';
 
 function SearchUser({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +12,7 @@ function SearchUser({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate=useNavigate();
-
+  const dispatch=useDispatch();
   // Fetch users based on search term
   useEffect(() => {
     const searchUsers = async () => {
@@ -71,6 +73,7 @@ function SearchUser({ onClose }) {
       })
       toast.success(response.data.message||"Conversation is created Successfully")
       navigate(`/dashboard/conversation/${response.data.Conversation}`)
+      dispatch(change())
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');

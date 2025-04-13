@@ -3,6 +3,7 @@ import { Search, Bell, Settings, MessageCircle, Plus } from 'lucide-react';
 import ConversationCard from './sidbar/ConversationCard';
 import SearchUser from './sidbar/Searchuser';
 import axiosInstance from '../utils/axiosConfig';
+import { useSelector } from 'react-redux';
 
 function ChatList() {
   const [conversations, setConversations] = useState([]);
@@ -10,7 +11,7 @@ function ChatList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [startnewchart, setstartnewchart] = useState(false);
-  
+  const change=useSelector((state)=>state.user.anychange);
   const getAllConversations = async () => {
     try {
       setLoading(true);
@@ -40,7 +41,7 @@ function ChatList() {
   useEffect(() => {
     getAllConversations();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [change]);
 
   const handleMessageUpdate = (conversationId, newMessage) => {
     setConversations(prevConversations => {

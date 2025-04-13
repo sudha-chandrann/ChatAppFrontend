@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosConfig';
+import { useDispatch } from 'react-redux';
+import { change } from '../../redux/userslice';
 
 function CreateGroup({ onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +14,7 @@ function CreateGroup({ onClose }) {
   const [groupName, setGroupName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const navigate = useNavigate();
+  const dispatch=useDispatch();
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -95,6 +98,7 @@ function CreateGroup({ onClose }) {
       });
       toast.success(response.data.message || "Group conversation created successfully");
       navigate(`/dashboard/conversation/${response.data.conversation}`);
+      dispatch(change())
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Something went wrong');

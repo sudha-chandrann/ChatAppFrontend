@@ -6,7 +6,8 @@ const initialState = {
     email:'',
     fullName:'',
     bio:'',
-    profilePicture:''
+    profilePicture:'',
+    anychange:false
 };
 
 const authSlice = createSlice({
@@ -29,9 +30,12 @@ const authSlice = createSlice({
             state.bio = '';
             state._id=''
         },
+        change:(state)=>{
+            state.anychange=!state.anychange;
+        }
        
     },
 });
 
-export const { authlogin, authlogout } = authSlice.actions;
+export const { authlogin, authlogout,change } = authSlice.actions;
 export default authSlice.reducer;
