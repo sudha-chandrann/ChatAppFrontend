@@ -14,7 +14,6 @@ function DashboardLayout() {
 
   const isProfilePage= location.pathname === "/dashboard/profile"; 
 
-  // Update isMobile state on window resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);

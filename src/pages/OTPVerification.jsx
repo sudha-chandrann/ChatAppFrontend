@@ -9,7 +9,6 @@ function OTPVerification() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get email from location state if available
   const [email, setEmail] = useState(location.state?.email || '');
   const [showEmailInput, setShowEmailInput] = useState(!location.state?.email);
   
@@ -22,14 +21,12 @@ function OTPVerification() {
   const inputRefs = useRef([]);
   const emailInputRef = useRef(null);
   
-  // Focus on the first input when component mounts
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
     }
   }, []);
   
-  // Countdown timer for resend button
   useEffect(() => {
     let timer;
     if (resendDisabled && countdown > 0) {
@@ -50,12 +47,10 @@ function OTPVerification() {
     // Only allow numbers
     if (value && !/^\d+$/.test(value)) return;
     
-    // Update the OTP array
     const newOtp = [...otp];
     newOtp[index] = value.charAt(0);
     setOtp(newOtp);
     
-    // Auto focus to next input if current input is filled
     if (value !== '' && index < 5) {
       inputRefs.current[index + 1].focus();
     }

@@ -14,11 +14,9 @@ function RecoverPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle request for recovery code
   const requestRecoveryCode = async (e) => {
     e.preventDefault();
 
-    // Validate email
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailPattern.test(email)) {
       toast.error("Please enter a valid email address");
@@ -52,11 +50,9 @@ function RecoverPassword() {
     }
   };
 
-  // Handle verification and password reset
   const resetPassword = async (e) => {
     e.preventDefault();
 
-    // Validate inputs
     if (!verificationCode) {
       toast.error("Please enter the verification code");
       return;
@@ -104,7 +100,6 @@ function RecoverPassword() {
     <main className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-950 text-gray-100 flex items-center justify-center py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto bg-gray-800/70 backdrop-blur-lg rounded-xl shadow-xl overflow-hidden border border-indigo-500/20">
-          {/* Header */}
           <div className="bg-gradient-to-r  from-blue-600 via-indigo-800 to-purple-600  p-6 relative">
             <button
               type="button"
@@ -120,7 +115,6 @@ function RecoverPassword() {
             <div className="w-16 h-1 bg-blue-300 mx-auto mt-3 rounded-full"></div>
           </div>
 
-          {/* Content */}
           <div className="p-6 sm:p-8">
             {step === 1 ? (
               <div className="space-y-6">
