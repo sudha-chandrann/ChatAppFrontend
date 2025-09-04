@@ -1,4 +1,3 @@
-// Enhance your existing socket.js file
 
 import { io } from "socket.io-client";
 

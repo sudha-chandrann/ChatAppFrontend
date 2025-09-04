@@ -18,6 +18,7 @@ import ConversationPage from './pages/ConversationPage.jsx';
 import InformationPage from './pages/InformationPage.jsx';
 import MediaPage from "./pages/MediaPage.jsx";
 import RecoverPassword from './pages/RecoverPassword.jsx';
+
 const router = createBrowserRouter([
   {
     path:"/",
